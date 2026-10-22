@@ -23,6 +23,10 @@ for metric in data["metrics"]:
 print("\n  Lowest-scoring trace:")
 low = data["lowest_trace"]
 print(f"    prompt: {low['prompt']}\n    answer: {low['answer']}\n    {low['metric']}: {low['score']} - {low['rationale']}")
+skipped = data.get("skipped")
+if skipped:
+    print(f"\n  Not scored: {skipped['traces']} traces ({skipped['error_type']}: {skipped['message']})")
+    print(f"    {skipped['why']}")
 PY
 
 mkdir -p "${REPO_ROOT}/artifacts/eval"

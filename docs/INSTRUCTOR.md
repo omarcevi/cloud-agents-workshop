@@ -112,6 +112,14 @@ participant who creates it at 0:45 might see the first scores after the session.
 yours (created the day before). `fallback_step6.sh` prints pre-recorded results from
 `evals/recorded/online-monitor-results.json` and marks step 6 as done with the fallback.
 
+What it scores: only turns the concierge answers itself (greetings, refusals,
+out-of-scope requests, salary questions). A turn with a hand-over to a sub-agent is skipped
+as a whole (`INSUFFICIENT_DATA: system_instruction is not uniform across call_llm spans`),
+so the day before, ask your demo agent a few salary and out-of-scope questions as well as
+normal ones. Say this out loud in the session; it is the kind of gap partners need to
+know about. Refresh the fallback's recording with
+`uv run python scripts/dev/record_monitor_results.py`.
+
 Two prerequisites, both handled by the scripts: the monitor needs prompt and answer
 content in telemetry (`.env` sets the three variables; without
 `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true`, kept by the reasoning-engine adapter because
@@ -166,8 +174,14 @@ dependencies changed), then push with `--force-with-lease`.
 
 ## End-to-end test
 
-`.github/workflows/e2e.yml` runs the lab against a real project and tears it down (about
-45 minutes, a dollar or two). One-time setup:
+Run it locally against a test project (about 45 minutes, a dollar or two):
+
+```bash
+RUN_E2E=1 uv run pytest tests/e2e -v -s --maxfail=1    # timings in artifacts/e2e-timings.json
+```
+
+`.github/workflows/e2e.yml` runs the same test from GitHub Actions. It is not wired up in
+this repository (no Workload Identity Federation is configured). To enable it:
 
 ```bash
 ./scripts/dev/setup_wif.sh TEST_PROJECT_ID omarcevi/cloud-agents-workshop --github
