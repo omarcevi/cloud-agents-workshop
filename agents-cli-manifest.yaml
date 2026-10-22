@@ -1,4 +1,4 @@
-name: "workplace-assistant"
+name: "a2a-it-desk"
 acli_version: "1.11.0"
 agent_directory: "app"
 region: 'europe-west1'

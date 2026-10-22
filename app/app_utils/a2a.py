@@ -34,7 +34,11 @@ from a2a.server.routes import (
 from a2a.server.tasks import TaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentExtension, AgentInterface
 from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
+from google.adk.a2a.converters.request_converter import (
+    convert_a2a_request_to_agent_run_request,
+)
 from google.adk.a2a.executor.a2a_agent_executor import A2aAgentExecutor
+from google.adk.a2a.executor.config import A2aAgentExecutorConfig
 from google.adk.a2a.utils.agent_card_builder import AgentCardBuilder
 
 if TYPE_CHECKING:
@@ -109,6 +113,20 @@ def _resolve_app_url(app_url: str | None) -> str:
     return "http://0.0.0.0:8000"
 
 
+def _run_as_caller_user(request, part_converter):  # type: ignore[no-untyped-def]
+    """A2A test: act for the employee the calling agent names in the request metadata.
+
+    Only identities with IAM permission on this Agent Runtime can reach the endpoint (and,
+    behind Agent Gateway, only the ones the policy allows), so the caller is trusted to
+    say which employee it acts for, as the MCP servers trust X-User-Email.
+    """
+    run_request = convert_a2a_request_to_agent_run_request(request, part_converter)
+    metadata = request.metadata or {}
+    if isinstance(metadata, dict) and metadata.get("kuzey_user_id"):
+        run_request.user_id = str(metadata["kuzey_user_id"])
+    return run_request
+
+
 async def attach_a2a_routes(
     app: FastAPI,
     *,
@@ -144,7 +162,11 @@ async def attach_a2a_routes(
     agent_card = _add_v0_3_compat_interface(agent_card)
 
     request_handler = DefaultRequestHandler(
-        agent_executor=A2aAgentExecutor(runner=runner, force_new_version=True),
+        agent_executor=A2aAgentExecutor(
+            runner=runner,
+            force_new_version=True,
+            config=A2aAgentExecutorConfig(request_converter=_run_as_caller_user),
+        ),
         task_store=task_store,
         agent_card=agent_card,
     )

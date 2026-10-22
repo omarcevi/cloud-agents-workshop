@@ -180,32 +180,60 @@ it_desk_agent = Agent(
 A2A_TEST_ROLE = os.environ.get("A2A_TEST_ROLE", "")
 
 
-def _remote_it_desk():  # type: ignore[no-untyped-def]
+def _department_agents():  # type: ignore[no-untyped-def]
+    """Find the department agents in Agent Registry and call them over A2A."""
     import google.auth
     import google.auth.transport.requests
     import httpx
     from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 
+    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    session = google.auth.transport.requests.AuthorizedSession(credentials)
+    project = os.environ["GOOGLE_CLOUD_PROJECT"]
+    location = os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_LOCATION", "europe-west1")
+    me = os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ID", "")
+    listing = session.get(
+        f"https://agentregistry.googleapis.com/v1/projects/{project}/locations/{location}/agents",
+        timeout=30,
+    )
+    listing.raise_for_status()
+
     class _GoogleAuth(httpx.Auth):
         """Bearer token from the agent's own identity, for the Agent Runtime A2A endpoint."""
 
-        def __init__(self) -> None:
-            self._creds, _ = google.auth.default(
-                scopes=["https://www.googleapis.com/auth/cloud-platform"]
-            )
-
         def auth_flow(self, request):  # type: ignore[no-untyped-def]
-            if not self._creds.valid:
-                self._creds.refresh(google.auth.transport.requests.Request())
-            request.headers["Authorization"] = f"Bearer {self._creds.token}"
+            if not credentials.valid:
+                credentials.refresh(google.auth.transport.requests.Request())
+            request.headers["Authorization"] = f"Bearer {credentials.token}"
             yield request
 
-    return RemoteA2aAgent(
-        name="it_desk_agent",
-        agent_card=os.environ["IT_DESK_A2A_CARD"],
-        description=it_desk_agent.description,
-        httpx_client=httpx.AsyncClient(auth=_GoogleAuth(), timeout=180),
-    )
+    agents = []
+    for entry in listing.json().get("agents", []):
+        runtime = entry.get("attributes", {}).get(
+            "agentregistry.googleapis.com/system/RuntimeReference", {}
+        ).get("uri", "")
+        if not entry.get("displayName", "").startswith("a2a-") or not runtime or runtime.endswith(f"/{me}"):
+            continue
+        resource = runtime.removeprefix("//aiplatform.googleapis.com/")
+        card_url = (
+            f"https://{location}-aiplatform.googleapis.com/reasoningEngines/v1/{resource}"
+            "/api/a2a/app/.well-known/agent-card.json"
+        )
+        card = session.get(card_url, timeout=60)
+        card.raise_for_status()
+        info = card.json()
+        print(f"discovered {info['name']} at {resource}", flush=True)
+        agents.append(
+            RemoteA2aAgent(
+                name=info["name"],
+                agent_card=card_url,
+                description=info.get("description", ""),
+                httpx_client=httpx.AsyncClient(auth=_GoogleAuth(), timeout=180),
+                # The employee this turn is for; the department agent acts for them.
+                a2a_request_meta_provider=lambda ctx, msg: {"kuzey_user_id": ctx.user_id},
+            )
+        )
+    return agents
 
 
 if A2A_TEST_ROLE == "it_desk":
@@ -222,7 +250,7 @@ else:
         sub_agents=[
             hr_policy_agent,
             leave_agent,
-            _remote_it_desk() if A2A_TEST_ROLE == "concierge" else it_desk_agent,
+            *(_department_agents() if A2A_TEST_ROLE == "concierge" else [it_desk_agent]),
         ],
         tools=[PreloadMemoryTool()],
         after_tool_callback=audit_tool_result,
