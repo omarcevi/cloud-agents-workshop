@@ -69,34 +69,19 @@ this tutorial open the project you selected here.
 
 ### Run it
 
-Cloud Shell has an older agents-cli in `/usr/local/bin`. Install 1.11 or later and put it
-first on your `PATH`:
-
-```bash
-uv tool install --force "google-agents-cli>=1.11"
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-&nbsp;
-
-Check tools, login and billing:
-
-```bash
-./scripts/check.sh 0
-```
-
-&nbsp;
-
-Set up (about 2 minutes):
-
-```bash
-./scripts/setup.sh
-```
-
-&nbsp;
-
-While it runs, read what it does:
-<walkthrough-editor-open-file filePath="scripts/setup.sh">scripts/setup.sh</walkthrough-editor-open-file>.
+1. Cloud Shell has an older agents-cli in `/usr/local/bin`. Install 1.11 or later and put it first on your `PATH`:
+   ```bash
+   uv tool install --force "google-agents-cli>=1.11"
+   export PATH="$HOME/.local/bin:$PATH"
+   ```
+2. Check tools, login and billing:
+   ```bash
+   ./scripts/check.sh 0
+   ```
+3. Set up (about 2 minutes). While it runs, read what it does: <walkthrough-editor-open-file filePath="scripts/setup.sh">scripts/setup.sh</walkthrough-editor-open-file>.
+   ```bash
+   ./scripts/setup.sh
+   ```
 
 ### See it in the console
 
@@ -139,31 +124,21 @@ and the `Dockerfile`), builds a container and creates an **Agent Runtime** insta
 
 ### Run it
 
-Deploy (about 5 minutes):
-
-```bash
-source .workshop.env
-agents-cli deploy --project $PROJECT_ID --agent-identity --no-confirm-project
-```
-
-&nbsp;
-
-Grant the agent's identity access to the MCP servers, and configure Memory Bank:
-
-```bash
-./scripts/grant_agent_access.sh
-```
-
-&nbsp;
-
-Chat with it. IAM grants take a minute or two to apply: if an answer says a system is
-unavailable, ask again.
-
-```bash
-AGENT_URL=$(./scripts/agent_url.sh)
-agents-cli run --url "$AGENT_URL" --mode adk "How many unused leave days can I carry over?"
-agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 in Istanbul?"
-```
+1. Deploy (about 5 minutes):
+   ```bash
+   source .workshop.env
+   agents-cli deploy --project $PROJECT_ID --agent-identity --no-confirm-project
+   ```
+2. Grant the agent's identity access to the MCP servers, and configure Memory Bank:
+   ```bash
+   ./scripts/grant_agent_access.sh
+   ```
+3. Chat with it. IAM grants take a minute or two to apply: if an answer says a system is unavailable, ask again.
+   ```bash
+   AGENT_URL=$(./scripts/agent_url.sh)
+   agents-cli run --url "$AGENT_URL" --mode adk "How many unused leave days can I carry over?"
+   agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 in Istanbul?"
+   ```
 
 ### See it in the console
 
@@ -207,29 +182,19 @@ Tell it something on Monday and it still knows on Friday.
 
 ### Run it
 
-Tell the agent something about yourself:
-
-```bash
-agents-cli run --url "$AGENT_URL" --mode adk "Hi! I'm on the platform team in the Istanbul office, and I prefer to take Fridays off."
-```
-
-&nbsp;
-
-Memory Bank extracts facts in the background, usually within a minute or two:
-
-```bash
-uv run python scripts/memory_bank.py list
-```
-
-&nbsp;
-
-Now ask in new sessions. The agent should know your office and remind you about the
-platform team's on-call swap:
-
-```bash
-agents-cli run --url "$AGENT_URL" --mode adk "How many leave days do I have?"
-agents-cli run --url "$AGENT_URL" --mode adk "Book next Friday off."
-```
+1. Tell the agent something about yourself:
+   ```bash
+   agents-cli run --url "$AGENT_URL" --mode adk "Hi! I'm on the platform team in the Istanbul office, and I prefer to take Fridays off."
+   ```
+2. Memory Bank extracts facts in the background, usually within a minute or two. See what it stored:
+   ```bash
+   uv run python scripts/memory_bank.py list
+   ```
+3. Now ask in new sessions. The agent should know your office and remind you about the platform team's on-call swap:
+   ```bash
+   agents-cli run --url "$AGENT_URL" --mode adk "How many leave days do I have?"
+   agents-cli run --url "$AGENT_URL" --mode adk "Book next Friday off."
+   ```
 
 ### See it in the console
 
@@ -275,47 +240,30 @@ owns this policy and agent teams register their tools.
 
 ### Run it
 
-Make sure the gateway finished building:
-
-```bash
-tail -1 .setup-gateway.log
-```
-
-&nbsp;
-
-It should say `GATEWAY READY`. Apply the access policy:
-
-```bash
-./scripts/secure.sh
-```
-
-&nbsp;
-
-Bind the agent to the gateway (a redeploy, about 5 minutes):
-
-```bash
-agents-cli deploy --project $PROJECT_ID --update-only --agent-identity --no-confirm-project \
-  --agent-gateway-egress=projects/$PROJECT_ID/locations/europe-west1/agentGateways/workplace-gw \
-  --update-env-vars GOOGLE_API_ENABLE_RUNTIME_BOUND_TOKEN=false
-```
-
-&nbsp;
-
-Same question as in step 2, and a check that HRIS still works:
-
-```bash
-agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 in Istanbul?"
-agents-cli run --url "$AGENT_URL" --mode adk "How many leave days do I have?"
-```
-
-&nbsp;
-
-The gateway's own record of the denial:
-
-```bash
-gcloud logging read 'resource.type="networkservices.googleapis.com/Gateway" AND jsonPayload.authzPolicyInfo.result="DENIED"' \
-  --freshness=15m --limit=3 --format='value(timestamp,httpRequest.requestUrl)'
-```
+1. Make sure the gateway finished building. It should say `GATEWAY READY`:
+   ```bash
+   tail -1 .setup-gateway.log
+   ```
+2. Apply the access policy:
+   ```bash
+   ./scripts/secure.sh
+   ```
+3. Bind the agent to the gateway (a redeploy, about 5 minutes):
+   ```bash
+   agents-cli deploy --project $PROJECT_ID --update-only --agent-identity --no-confirm-project \
+     --agent-gateway-egress=projects/$PROJECT_ID/locations/europe-west1/agentGateways/workplace-gw \
+     --update-env-vars GOOGLE_API_ENABLE_RUNTIME_BOUND_TOKEN=false
+   ```
+4. Ask the same question as in step 2, and check that HRIS still works:
+   ```bash
+   agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 in Istanbul?"
+   agents-cli run --url "$AGENT_URL" --mode adk "How many leave days do I have?"
+   ```
+5. Read the gateway's own record of the denial:
+   ```bash
+   gcloud logging read 'resource.type="networkservices.googleapis.com/Gateway" AND jsonPayload.authzPolicyInfo.result="DENIED"' \
+     --freshness=15m --limit=3 --format='value(timestamp,httpRequest.requestUrl)'
+   ```
 
 ### See it in the console
 
@@ -361,24 +309,14 @@ Agent Runtime exports **OpenTelemetry** data without extra code:
 
 ### Run it
 
-Make one leave request:
-
-```bash
-agents-cli run --url "$AGENT_URL" --mode adk "Book next Monday off as a half day and tell me how many leave days I have left."
-```
-
-&nbsp;
-
-Wait a minute for the spans to arrive, then create the dashboard and print the trace as a
-waterfall:
-
-```bash
-./scripts/observe.sh
-```
-
-&nbsp;
-
-Read it like a profile: tool calls take milliseconds, model calls take seconds.
+1. Make one leave request:
+   ```bash
+   agents-cli run --url "$AGENT_URL" --mode adk "Book next Monday off as a half day and tell me how many leave days I have left."
+   ```
+2. Wait a minute for the spans to arrive, then create the dashboard and print the trace as a waterfall. Read it like a profile: tool calls take milliseconds, model calls take seconds.
+   ```bash
+   ./scripts/observe.sh
+   ```
 
 ### See it in the console
 
@@ -428,53 +366,30 @@ Every production failure becomes a new eval case.
 
 ### Run it
 
-The eval gate (about 2 minutes):
-
-```bash
-./scripts/eval.sh
-```
-
-&nbsp;
-
-Score your own conversations (about a minute):
-
-```bash
-./scripts/score_live.sh
-```
-
-&nbsp;
-
-Create the managed Online Monitor:
-
-```bash
-./scripts/monitor.sh
-```
-
-&nbsp;
-
-Turn a production conversation into a test case:
-
-```bash
-uv run python scripts/ask.py "Book 29 October off for me."
-```
-
-&nbsp;
-
-Copy the `session:` number it prints, then:
-
-```bash
-uv run python scripts/session_to_eval_case.py SESSION_ID --id my_regression
-```
-
-&nbsp;
-
-In <walkthrough-editor-open-file filePath="evals/cases.yaml">evals/cases.yaml</walkthrough-editor-open-file>,
-the new case is at the end of the behaviour list. Set
-`forbidden_tools: [submit_leave_request]` (29 October is a public holiday), then:
-
-```bash
-uv run python evals/build_datasets.py && ./scripts/eval.sh behaviour
-```
+1. Run the eval gate (about 2 minutes):
+   ```bash
+   ./scripts/eval.sh
+   ```
+2. Score your own conversations from steps 2–5 (about a minute):
+   ```bash
+   ./scripts/score_live.sh
+   ```
+3. Create the managed Online Monitor:
+   ```bash
+   ./scripts/monitor.sh
+   ```
+4. Turn a production conversation into a test case. First, ask:
+   ```bash
+   uv run python scripts/ask.py "Book 29 October off for me."
+   ```
+5. Copy the `session:` number it printed, then:
+   ```bash
+   uv run python scripts/session_to_eval_case.py SESSION_ID --id my_regression
+   ```
+6. In <walkthrough-editor-open-file filePath="evals/cases.yaml">evals/cases.yaml</walkthrough-editor-open-file> the new case is at the end of the behaviour list. Set `forbidden_tools: [submit_leave_request]` (29 October is a public holiday), then run the gate again:
+   ```bash
+   uv run python evals/build_datasets.py && ./scripts/eval.sh behaviour
+   ```
 
 ### See it in the console
 
