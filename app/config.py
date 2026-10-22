@@ -23,12 +23,12 @@ load_dotenv(REPO_ROOT / ".env")
 # and the `eu` endpoint has none (aiplatform.eu.rep.mtls.googleapis.com does not
 # resolve). `eu` works for local runs. Details: docs/VERIFIED.md.
 # gemini-3.5-flash, not 3.8: during testing (October 2026) gemini-3.8-flash on `global`
-# answered in 3 s to 130 s from one call to the next, while 3.5 stayed around 3 s.
-# A room full of participants needs the steady one; set MODEL to try another.
+# answered in 3 s to 130 s from one call to the next; 3.5 was steadier (mostly 3 s,
+# occasional 20 s). Set MODEL to try another.
 MODEL = os.environ.get("MODEL", "gemini-3.5-flash")
 MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "global")
 # A model call that takes longer than this is abandoned and retried (3 attempts).
-MODEL_TIMEOUT_SECONDS = float(os.environ.get("MODEL_TIMEOUT_SECONDS", "45"))
+MODEL_TIMEOUT_SECONDS = float(os.environ.get("MODEL_TIMEOUT_SECONDS", "25"))
 # LOW thinking answers these routing and tool-calling turns faster than the default
 # with the same results in the eval set.
 THINKING_LEVEL = os.environ.get("THINKING_LEVEL", "LOW")

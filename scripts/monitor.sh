@@ -19,20 +19,29 @@ RESOURCE="$(agent_resource)" || true
 LOCATION="$(cut -d/ -f4 <<< "${RESOURCE}")"
 BASE="https://${LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${PROJECT_ID}/locations/${LOCATION}/onlineEvaluators"
 
-existing="$(api GET "${BASE}" | python3 -c 'import json,sys; print(next((e["name"] for e in json.load(sys.stdin).get("onlineEvaluators",[]) if e.get("displayName")=="workplace-quality"), ""))')"
+# Online monitors run as the Vertex AI service agent and read traces through the
+# Observability API; without this role a new monitor goes straight to FAILED
+# ("Permission 'observability.views.access' denied ... _Trace/.../_AllSpans").
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" --condition None --quiet \
+  --member "serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-aiplatform.iam.gserviceaccount.com" \
+  --role roles/observability.viewAccessor >/dev/null
+ok "Vertex AI service agent may read traces (roles/observability.viewAccessor)"
+
+existing="$(api GET "${BASE}" | python3 -c 'import json,sys; print(next((e["name"] for e in json.load(sys.stdin).get("onlineEvaluators",[]) if e.get("displayName")=="workplace-quality" and e.get("state")!="FAILED"), ""))')"
 if [[ -n "${existing}" ]]; then
   ok "Online monitor already exists: ${existing##*/}"
 else
-  # Predefined v1 metrics: safety, overall response quality and tool use. The v1 specs are
-  # available in every region that supports monitors; newer versions are not everywhere.
+  # The four metrics the console offers by default (v1 specs, available in every monitor
+  # region). Same request body the console sends: note the empty openTelemetry block;
+  # setting semconvVersion makes the API answer INVALID_ARGUMENT.
   body="$(python3 - "${RESOURCE}" "${SAMPLING}" <<'PY'
 import json, sys
 resource, sampling = sys.argv[1], int(sys.argv[2])
-metrics = ["safety_v1", "final_response_quality_v1", "tool_use_quality_v1"]
+metrics = ["final_response_quality_v1", "tool_use_quality_v1", "hallucination_v1", "safety_v1"]
 print(json.dumps({
     "displayName": "workplace-quality",
     "agentResource": resource,
-    "cloudObservability": {"openTelemetry": {"semconvVersion": "1.39.0"}},
+    "cloudObservability": {"traceScope": {}, "openTelemetry": {}},
     "metricSources": [{"metric": {"predefinedMetricSpec": {"metricSpecName": m}}} for m in metrics],
     "config": {"randomSampling": {"percentage": sampling}, "maxEvaluatedSamplesPerRun": "20"},
 }))
@@ -47,4 +56,4 @@ PY
   ok "requested: $(python3 -c 'import json,sys; print(json.load(sys.stdin).get("name",""))' <<< "${response}")"
 fi
 log "Scores appear about 10 minutes after traffic: Agent Platform > Agents > Deployments > ${AGENT_NAME} > Dashboard > Evaluation"
-echo "  https://console.cloud.google.com/vertex-ai/agents/agent-engines/locations/${LOCATION}/agent-engines/${RESOURCE##*/}?project=${PROJECT_ID}"
+echo "  https://console.cloud.google.com/agent-platform/runtimes/locations/${LOCATION}/agent-engines/${RESOURCE##*/}/dashboard?project=${PROJECT_ID}"

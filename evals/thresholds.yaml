@@ -5,6 +5,6 @@ behaviour:
   tool_trajectory: 0.85
   no_compensation_leak: 1.0
 handbook:
-  grounding: 0.8
+  grounding_v1: 0.8
   routed_to_expected_agent: 0.8
   tool_trajectory: 1.0

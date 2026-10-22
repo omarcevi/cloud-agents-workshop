@@ -4,9 +4,13 @@
 and decides. It also fails if any case errored, because errored cases are left out
 of the mean.
 
-Usage: uv run python evals/gate.py SUITE RESULTS_DIR
+And it fails if cases are missing: `agents-cli eval run` drops a case whose agent run
+failed (for example a model timeout) and still exits 0.
+
+Usage: uv run python evals/gate.py SUITE RESULTS_DIR [DATASET]
   SUITE is a key of thresholds.yaml (behaviour, handbook); RESULTS_DIR holds the
-  results_*.json written by `agents-cli eval run --output RESULTS_DIR`.
+  results_*.json written by `agents-cli eval run --output RESULTS_DIR`; DATASET (default
+  evals/datasets/SUITE.json) is used to count the cases that should have run.
 """
 
 from __future__ import annotations
@@ -29,8 +33,17 @@ def latest_results(results_dir: Path) -> dict[str, Any]:
     return data
 
 
-def check(results: dict[str, Any], thresholds: dict[str, float]) -> tuple[bool, list[str]]:
+def check(
+    results: dict[str, Any], thresholds: dict[str, float], expected_cases: int | None = None
+) -> tuple[bool, list[str]]:
     lines, passed = [], True
+    ran = len(results.get("evaluation_dataset", [{}])[0].get("eval_cases", []))
+    if expected_cases is not None and ran < expected_cases:
+        passed = False
+        lines.append(
+            f"FAIL only {ran} of {expected_cases} cases ran (the others failed to generate, "
+            "usually a model timeout). Run the eval again."
+        )
     summary = {m["metric_name"]: m for m in results.get("summary_metrics", [])}
     for metric, minimum in thresholds.items():
         m = summary.get(metric)
@@ -56,12 +69,14 @@ def check(results: dict[str, Any], thresholds: dict[str, float]) -> tuple[bool, 
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         print(__doc__)
         return 2
     suite, results_dir = sys.argv[1], Path(sys.argv[2])
+    dataset = Path(sys.argv[3]) if len(sys.argv) == 4 else THRESHOLDS.parent / "datasets" / f"{suite}.json"
+    expected = len(json.loads(dataset.read_text())["eval_cases"]) if dataset.exists() else None
     thresholds = yaml.safe_load(THRESHOLDS.read_text())[suite]
-    passed, lines = check(latest_results(results_dir), thresholds)
+    passed, lines = check(latest_results(results_dir), thresholds, expected)
     print("\n".join(lines))
     print(f"Eval gate ({suite}): {'PASSED' if passed else 'FAILED'}")
     return 0 if passed else 1

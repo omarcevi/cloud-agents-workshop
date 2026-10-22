@@ -55,6 +55,7 @@ def find_trace(project: str, trace_filter: str, minutes: int) -> dict[str, Any] 
 
 
 def summarize(trace: dict[str, Any]) -> dict[str, Any]:
+    """Count what a check needs. Spans that are still arriving are simply not counted yet."""
     spans = sorted(trace["spans"], key=lambda s: s["startTime"])
     names = [s["name"] for s in spans]
     sub_agent_spans = [n for n in names if n.startswith("invoke_agent ") and n.split(" ", 1)[1] in SUB_AGENTS]

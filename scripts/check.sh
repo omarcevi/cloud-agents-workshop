@@ -121,12 +121,21 @@ check_4() {
 
 check_5() {
   log "Step 5: a trace with a sub-agent and tool calls exists"
-  local summary
-  summary="$(cd "${REPO_ROOT}" && uv run --quiet python scripts/trace.py --project "${PROJECT_ID}" --json --minutes 180 2>/dev/null)" \
-    || { miss "no trace with a leave request in the last 3 hours. Book leave, wait a minute, retry"; return; }
-  local subs tools
-  subs="$(json_get "${summary}" 'len(d["sub_agent_spans"])')"
-  tools="$(json_get "${summary}" 'len(d["tool_spans"])')"
+  # Spans arrive over a minute or two, and the sub-agent span closes last: poll.
+  local summary="" subs=0 tools=0
+  for _ in $(seq 1 9); do
+    summary="$(cd "${REPO_ROOT}" && uv run --quiet python scripts/trace.py --project "${PROJECT_ID}" --json --minutes 180 2>/dev/null || true)"
+    if [[ -n "${summary}" ]]; then
+      subs="$(json_get "${summary}" 'len(d["sub_agent_spans"])')"
+      tools="$(json_get "${summary}" 'len(d["tool_spans"])')"
+      if [[ "${subs}" -ge 1 && "${tools}" -ge 2 ]]; then break; fi
+    fi
+    sleep 15
+  done
+  if [[ -z "${summary}" ]]; then
+    miss "no trace with a leave request in the last 3 hours. Book leave, wait a minute, retry"
+    return
+  fi
   if [[ "${subs}" -ge 1 ]]; then pass "sub-agent spans: $(json_get "${summary}" 'd["sub_agent_spans"]')"; else miss "no sub-agent span"; fi
   if [[ "${tools}" -ge 2 ]]; then pass "tool spans: $(json_get "${summary}" 'd["tool_spans"]')"; else miss "fewer than 2 tool spans"; fi
   if gcloud monitoring dashboards list --project "${PROJECT_ID}" --filter='displayName:"Workplace Assistant"' --format='value(name)' | grep -q .; then pass "dashboard exists"; else miss "no dashboard. Run ./scripts/observe.sh"; fi

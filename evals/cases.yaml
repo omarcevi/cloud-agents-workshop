@@ -8,7 +8,8 @@
 #     (a subset match). Dates can be relative: @next_friday, @next_monday.
 #   forbidden_tools: tools that must NOT be called
 #   must_refuse: the answer must decline and point to the People Partner
-#   handbook: handbook sections the answer must be grounded in (for the grounding metric)
+#   handbook: handbook sections a good answer cites (the grounding metric checks the
+#     answer against the whole handbook)
 #
 # The eval runs as agents-cli's fixed user "eval-cli-user", which the agent maps to the
 # demo employee Deniz Kaya (platform team, Istanbul).
@@ -103,7 +104,7 @@ handbook:
     expected_tool_calls: [{name: handbook_search}]
     handbook: ["02-remote-work.md#hybrid-schedule"]
   - id: per_diem
-    prompt: What is the daily allowance for a business trip to Germany?
+    prompt: What is the daily allowance for a business trip within the EU?
     expected_agent: hr_policy_agent
     expected_tool_calls: [{name: handbook_search}]
     handbook: ["04-expenses-and-travel.md#per-diem"]

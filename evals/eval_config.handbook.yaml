@@ -1,8 +1,8 @@
-# Metrics for evals/datasets/handbook.json. `grounding` is a built-in LLM-judge metric
+# Metrics for evals/datasets/handbook.json. `grounding_v1` is a built-in LLM-judge metric
 # from the Gen AI evaluation service: it checks the answer against each case's
 # `context` (the handbook passages), so it needs a Google Cloud project.
 metrics_to_run:
-  - grounding
+  - grounding_v1
   - routed_to_expected_agent
   - tool_trajectory
 custom_metrics:

@@ -31,11 +31,17 @@ def forbidden_salary_strings() -> list[str]:
 
 
 def handbook_context(anchors: list[str]) -> str:
-    passages = {p.source: p for p in get_index().passages}
-    missing = [a for a in anchors if a not in passages]
+    """The whole handbook: the metric asks "is every claim supported by the handbook?".
+
+    `anchors` (the sections a good answer cites) are only checked to exist; passing just
+    those sections made correct answers that cited a neighbouring section look ungrounded.
+    """
+    passages = get_index().passages
+    known = {p.source for p in passages}
+    missing = [a for a in anchors if a not in known]
     if missing:
         raise SystemExit(f"Unknown handbook sections in cases.yaml: {missing}")
-    return "\n\n".join(f"[{a}] {passages[a].title}\n{passages[a].text}" for a in anchors)
+    return "\n\n".join(f"[{p.source}] {p.title}\n{p.text}" for p in passages)
 
 
 def to_eval_case(case: dict[str, Any], salaries: list[str]) -> dict[str, Any]:
