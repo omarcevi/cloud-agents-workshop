@@ -1,18 +1,19 @@
 # Deploying Your Agents on Google Cloud: workshop lab
 
-Hands-on lab for **Google Cloud Day Türkiye, Builder Connect** (27 October 2026).
-You deploy a multi-agent **Workplace Assistant** to **Agent Runtime** with its own
-**Agent Identity**, give it **Memory Bank**, put **Agent Gateway** in front of its tool
-calls, follow a request through **Cloud Trace**, and gate changes with **evals** and an
-**Online Monitor**.
+This repository is the hands-on lab for **Google Cloud Day Türkiye, Builder Connect**
+(27 October 2026). You deploy a multi-agent **Workplace Assistant** to **Agent Runtime** with
+its own **Agent Identity**. You give it **Memory Bank** and put **Agent Gateway** in front of
+its tool calls. Then you follow a request in **Cloud Trace**. You use **evals** as a gate for
+changes, and an **Online Monitor** gives scores to live traffic.
 
-**Follow-along guide (start here):** https://omarcevi.dev/workshops/deploy-agents-workshop/
+**Step-by-step guide (start here):** https://omarcevi.dev/workshops/deploy-agents-workshop/
 
-**Or follow it step by step inside Cloud Shell** (opens the repo with a guided tutorial panel). In the dialog, tick **Trust repo**, then **Confirm**; otherwise Cloud Shell runs in ephemeral mode and deletes your files when the session ends. Open it once: each click clones another copy (`cloud-agents-workshop-0`, ...):
+**You can also do the lab in Cloud Shell, with a tutorial panel that shows each step.** In the dialog, select **Trust repo**, then click **Confirm**. If you do not select **Trust repo**, Cloud Shell runs in ephemeral mode and deletes your files at the end of the session. Click the button only one time, because each click makes one more copy (`cloud-agents-workshop-0`, ...):
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/omarcevi/cloud-agents-workshop.git&cloudshell_git_branch=main&cloudshell_tutorial=tutorial.md&cloudshell_workspace=.&show=ide%2Cterminal)
 
-Everything here is fictional: Kuzey Labs, its employees, handbook, salaries and tickets.
+All data in this repository is fictional: Kuzey Labs, its employees, the handbook, the
+salaries and the tickets.
 
 ```
                          Gemini Enterprise (optional)  /  agents-cli run  /  console playground
@@ -44,9 +45,10 @@ Cloud Run, IAM-only ingress (roles/run.invoker for the agent identity)
 | 5 | Observe | `./scripts/observe.sh` | trace with a sub-agent span and ≥ 2 tool spans | `step-5-observe` |
 | 6 | Evaluate | `./scripts/eval.sh`, `./scripts/score_live.sh`, create an Online Monitor | eval passes thresholds, live traffic scored, monitor exists | `step-6-evaluate` |
 
-Fallbacks when a preview feature is not available to you: `./scripts/fallback_step4.sh`
-(Cloud Run IAM instead of Agent Gateway) and `./scripts/fallback_step6.sh` (local eval plus
-recorded live-traffic scores). Clean up with `./scripts/teardown.sh`.
+If a preview feature is not available to you, use a fallback script.
+`./scripts/fallback_step4.sh` uses Cloud Run IAM instead of Agent Gateway.
+`./scripts/fallback_step6.sh` runs the local eval and shows recorded scores for live traffic.
+To delete all the resources, run `./scripts/teardown.sh`.
 
 ## Quick start (Cloud Shell)
 
@@ -59,9 +61,9 @@ export PATH="$HOME/.local/bin:$PATH"       # Cloud Shell has an older agents-cli
 ./scripts/setup.sh && ./scripts/check.sh 1
 ```
 
-Then follow the guide step by step. Each checkpoint branch (`step-0-start` … `step-6-evaluate`)
-holds the repo as it should look after that step, plus a `.checkpoint` file so
-`./scripts/check.sh` without an argument checks the right step.
+Then do the steps in the guide. Each checkpoint branch (`step-0-start` … `step-6-evaluate`)
+contains the repository as it is after that step. It also contains a `.checkpoint` file, so
+`./scripts/check.sh` without an argument checks the correct step.
 
 ## Repository layout
 
@@ -93,11 +95,11 @@ RUN_INTEGRATION=1 uv run pytest tests/integration   # needs gcloud auth applicat
 agents-cli playground                       # ADK web UI on localhost (in-memory sessions and memory)
 ```
 
-Without `*_MCP_URL` in `.env` the agent expects local MCP servers on ports 8081–8083
-(`PORT=8081 uv run python -m mcp_servers.hris.server`, and so on). With the Cloud Run URLs
-from `setup.sh`, local runs call Cloud Run with your own identity token.
+If `.env` has no `*_MCP_URL` values, the agent uses local MCP servers on ports 8081–8083
+(`PORT=8081 uv run python -m mcp_servers.hris.server`, and so on). If `.env` has the Cloud Run
+URLs from `setup.sh`, local runs call Cloud Run with your own identity token.
 
-## Choosing a runtime
+## Runtime options
 
 | | Agent Runtime | Cloud Run | GKE |
 |---|---|---|---|
@@ -108,41 +110,45 @@ from `setup.sh`, local runs call Cloud Run with your own identity token.
 | Scaling | Scale to zero, per-request billing | Scale to zero, full control of CPU, concurrency, networking | Anything Kubernetes can do |
 | Pick it when | You want the platform to own operations (default) | You need custom serving, sidecars, or VPC egress control | You already run GKE or need GPUs, service mesh, multi-cloud |
 
-**Cloud Run.** The `alt/cloud-run` branch is the same agent re-scaffolded with
-`agents-cli scaffold enhance . --deployment-target cloud_run`, which adds the Cloud Run
-Dockerfile and deploy settings; deploy with `agents-cli deploy` (it runs `gcloud run deploy`).
-Sessions use Agent Platform Sessions through `SESSION_SERVICE_URI=agentengine://…`.
+**Cloud Run.** The `alt/cloud-run` branch is the same agent after
+`agents-cli scaffold enhance . --deployment-target cloud_run`. This command adds the Cloud Run
+Dockerfile and the deployment settings. To deploy, run `agents-cli deploy` (it runs
+`gcloud run deploy`). Sessions use Agent Platform Sessions through
+`SESSION_SERVICE_URI=agentengine://…`.
 
 **GKE.** `agents-cli scaffold enhance . --deployment-target gke` adds Kubernetes manifests
-and Terraform for a cluster; `agents-cli deploy` builds the image, applies Terraform and runs
-`kubectl apply`. Use Workload Identity for the pod's service account and keep sessions and
-memory in Agent Platform so the pods stay stateless.
+and Terraform for a cluster. Then `agents-cli deploy` builds the image, applies the Terraform
+and runs `kubectl apply`. Use Workload Identity for the service account of the pod. Keep
+sessions and memory in Agent Platform, so that the pods have no state.
 
-## Upgrading retrieval
+## Retrieval for larger document sets
 
-The handbook is six small markdown files, so `app/tools/handbook.py` uses in-process BM25:
-no index to build, nothing to pay for, setup stays fast. For real document sets, swap the
-tool for the **Agent Platform RAG Engine** (`VertexAiRagRetrieval` in ADK) or **Vertex AI
-Search** (`VertexAiSearchTool`), and keep the same tool name so the eval set still applies.
-agents-cli 1.11 ships retrieval as clone-and-study recipes rather than a scaffold flag
-(`agents-cli data-ingestion` is removed): `rag-agent-search` (managed ingestion with
-Vertex AI Search) and `rag-vector-search` (Vector Search with your own chunking), listed in
-the agents-cli ADK skill's recipe index.
+The handbook is six small markdown files, so `app/tools/handbook.py` uses BM25 in the agent
+process. There is no index to build and no cost, and the setup stays fast. For real document
+sets, replace the tool with the **Agent Platform RAG Engine** (`VertexAiRagRetrieval` in ADK)
+or **Vertex AI Search** (`VertexAiSearchTool`). Keep the same tool name, so that the eval set
+still applies.
+
+agents-cli 1.11 gives retrieval as recipes that you clone and study, not as a scaffold flag
+(the command `agents-cli data-ingestion` no longer exists). The recipes are `rag-agent-search` (managed
+ingestion with Vertex AI Search) and `rag-vector-search` (Vector Search with chunks that you
+make). The recipe index of the agents-cli ADK skill lists them.
 
 ## Cost
 
-A full run-through costs about **USD 0.30–1 per participant**, mostly Gemini tokens; Agent
-Runtime, Cloud Run, Sessions, Memory Bank and observability stay inside free tiers or cost
-cents at workshop scale. Details and measured numbers: [docs/DRY_RUN.md](docs/DRY_RUN.md).
-Everything scales to zero; `./scripts/teardown.sh` removes it all.
+A full run of the lab costs approximately **USD 1 per participant**, mostly for Gemini
+tokens. Agent Runtime, Cloud Run, Sessions, Memory Bank and observability stay in the free
+tiers, or cost cents at the scale of a workshop. For details and measured numbers, see
+[docs/DRY_RUN.md](docs/DRY_RUN.md). All services scale to zero, and `./scripts/teardown.sh`
+removes all the resources.
 
 ## Security notes
 
-- No secrets in git: `.env` is generated and ignored; use Secret Manager with
-  `agents-cli deploy --secrets ENV=SECRET`. A gitleaks pre-commit hook guards commits
-  (`uv run pre-commit install`).
-- The employee identity (`user_id`) is asserted by whoever calls Agent Runtime. Only callers
-  with IAM access can call it, and the MCP servers trust the agent's `X-User-Email` header.
-  For production, see "Taking this to a customer" on the step 4 guide page.
+- Git contains no secrets. The setup script makes `.env`, and git ignores it. For secrets,
+  use Secret Manager with `agents-cli deploy --secrets ENV=SECRET`. A gitleaks pre-commit
+  hook examines each commit (`uv run pre-commit install`).
+- The caller of Agent Runtime gives the employee identity (`user_id`). Only callers with IAM
+  access can call Agent Runtime, and the MCP servers trust the `X-User-Email` header from the
+  agent. For production, see "Take this to a customer" on the guide page for step 4.
 
-Licensed under Apache 2.0. Scaffold files keep their Google copyright headers.
+The license is Apache 2.0. The scaffold files keep their Google copyright headers.

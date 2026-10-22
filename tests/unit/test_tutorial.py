@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import re
 from pathlib import Path
@@ -43,3 +44,14 @@ def test_console_links_open_the_participants_project() -> None:
     assert len(links) >= 10
     for link in links:
         assert link.endswith("?project=<walkthrough-project-id/>"), link
+
+
+def test_participant_text_follows_simplified_technical_english() -> None:
+    spec = importlib.util.spec_from_file_location(
+        "ste_check", ROOT / "scripts" / "dev" / "ste_check.py"
+    )
+    assert spec and spec.loader
+    ste = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ste)
+    for name in ("tutorial.md", "README.md"):
+        assert ste.check_file(ROOT / name) == [], name

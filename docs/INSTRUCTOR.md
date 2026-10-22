@@ -203,6 +203,16 @@ Identity Federation provider that accepts only the E2E workflow on main, running
 `e2e` environment. Create that environment with required reviewers (Settings →
 Environments). Use a dedicated test project: the job can do anything in it.
 
+## Writing style
+
+Participant-facing text (the guide, `tutorial.md`, the README) follows the measurable rules
+of ASD-STE100 Simplified Technical English: instructions in the imperative, one per
+sentence, at most 20 words; descriptions at most 25 words; active voice; no "-ing" forms
+outside technical names; no should/would/could/may; at most 6 sentences per paragraph.
+Check a file with `uv run python scripts/dev/ste_check.py FILE`; a unit test keeps the
+tutorial and README at zero issues. The script cannot check the STE dictionary (approved
+words and meanings), so review new words by hand.
+
 ## Known rough edges
 
 - First query right after deploy can take 30–60 s (cold start, IAM propagation).
