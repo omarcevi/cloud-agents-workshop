@@ -1,0 +1,59 @@
+# The whole lab against a real project, then teardown. Manual only: it deploys, costs a
+# little, and takes about 45 minutes.
+#
+# One-time setup: scripts/dev/setup_wif.sh creates a Workload Identity Federation pool and
+# a deployer service account in the test project and prints the repository variables:
+#   E2E_PROJECT_ID, E2E_WIF_PROVIDER, E2E_SERVICE_ACCOUNT
+name: E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: Region for the lab
+        default: europe-west1
+      keep:
+        description: Skip teardown (debugging)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write  # for Workload Identity Federation
+
+concurrency:
+  group: e2e
+  cancel-in-progress: false
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PROJECT_ID: ${{ vars.E2E_PROJECT_ID }}
+      REGION: ${{ inputs.region }}
+      E2E_KEEP: ${{ inputs.keep && '1' || '' }}
+      RUN_E2E: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.E2E_WIF_PROVIDER }}
+          service_account: ${{ vars.E2E_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: ">= 590.0.0"
+          install_components: beta,alpha
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          uv sync --locked
+          uv tool install "google-agents-cli>=1.11"
+          gcloud config set project "${PROJECT_ID}"
+      - name: Lab steps 1-6 and teardown
+        run: uv run pytest tests/e2e -v -s --maxfail=1
+      - name: Teardown (always)
+        if: always() && env.E2E_KEEP != '1'
+        run: ./scripts/teardown.sh --yes || true
