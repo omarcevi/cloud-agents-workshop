@@ -1,0 +1,16 @@
+{
+  "name": "workplace_gateway_denied",
+  "description": "Requests Agent Gateway refused, by destination host. Source: the gateway's request log (networkservices.googleapis.com/Gateway); field names checked against a live denial (docs/VERIFIED.md).",
+  "filter": "resource.type=\"networkservices.googleapis.com/Gateway\" AND resource.labels.gateway_name=\"workplace-gw\" AND jsonPayload.authzPolicyInfo.result=\"DENIED\"",
+  "metricDescriptor": {
+    "metricKind": "DELTA",
+    "valueType": "INT64",
+    "unit": "1",
+    "labels": [
+      {"key": "host", "valueType": "STRING", "description": "Destination host name"}
+    ]
+  },
+  "labelExtractors": {
+    "host": "EXTRACT(jsonPayload.enforcedGatewaySecurityPolicy.hostname)"
+  }
+}

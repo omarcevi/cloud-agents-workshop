@@ -3,15 +3,14 @@
 # agent is allowed to reach them. Matching is by exact hostname: list every standard,
 # regional and mTLS variant. REGION is replaced with the workshop region.
 # Source: "Allowlist essential APIs" in the Agent Gateway + Agent Runtime docs (docs/VERIFIED.md).
+# Gemini (MODEL_LOCATION=global in app/config.py)
 https://aiplatform.googleapis.com
 https://aiplatform.mtls.googleapis.com
+# Sessions and Memory Bank in the agent's region
 https://REGION-aiplatform.googleapis.com
 https://REGION-aiplatform.mtls.googleapis.com
 https://aiplatform.REGION.rep.googleapis.com
 https://aiplatform.REGION.rep.mtls.googleapis.com
-# Gemini on the EU multi-region endpoint (MODEL_LOCATION=eu in app/config.py)
-https://aiplatform.eu.rep.googleapis.com
-https://aiplatform.eu.rep.mtls.googleapis.com
 https://telemetry.googleapis.com
 https://telemetry.mtls.googleapis.com
 https://logging.googleapis.com

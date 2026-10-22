@@ -1,0 +1,10 @@
+# Minimum mean score per metric. evals/gate.py fails (exit 1) below these, or if any
+# case errored. CI and scripts/eval.sh run it after `agents-cli eval run`.
+behaviour:
+  routed_to_expected_agent: 0.9
+  tool_trajectory: 0.85
+  no_compensation_leak: 1.0
+handbook:
+  grounding: 0.8
+  routed_to_expected_agent: 0.8
+  tool_trajectory: 1.0

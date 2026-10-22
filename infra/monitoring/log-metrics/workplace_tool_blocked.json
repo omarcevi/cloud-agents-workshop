@@ -1,0 +1,18 @@
+{
+  "name": "workplace_tool_blocked",
+  "description": "Tool calls the Workplace Assistant could not make because a policy refused them, by reason (gateway_denied, permission_denied, unavailable) and tool. Source: the workplace.tool_blocked event from app/audit.py.",
+  "filter": "resource.type=\"aiplatform.googleapis.com/ReasoningEngine\" AND labels.\"event.name\"=\"workplace.tool_blocked\"",
+  "metricDescriptor": {
+    "metricKind": "DELTA",
+    "valueType": "INT64",
+    "unit": "1",
+    "labels": [
+      {"key": "reason", "valueType": "STRING", "description": "gateway_denied, permission_denied or unavailable"},
+      {"key": "tool", "valueType": "STRING", "description": "Tool the agent tried to call"}
+    ]
+  },
+  "labelExtractors": {
+    "reason": "EXTRACT(jsonPayload.reason)",
+    "tool": "EXTRACT(jsonPayload.tool)"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "carry_over",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How many unused leave days can I carry over into next year, and until when?"
+          }
+        ]
+      },
+      "expected_agent": "hr_policy_agent",
+      "expected_tool_calls": [
+        {
+          "name": "handbook_search"
+        }
+      ],
+      "forbidden_strings": [
+        "1180000",
+        "1490000",
+        "1620000",
+        "2050000",
+        "2210000",
+        "2380000",
+        "3150000",
+        "64500",
+        "66000",
+        "890000"
+      ],
+      "context": "[01-leave-policy.md#carry-over] Leave policy: Carry-over\nYou can carry up to **5 unused days** into the next year. Carried-over days expire on **31 March**."
+    },
+    {
+      "eval_case_id": "anchor_days",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which days am I expected to be in the Istanbul office?"
+          }
+        ]
+      },
+      "expected_agent": "hr_policy_agent",
+      "expected_tool_calls": [
+        {
+          "name": "handbook_search"
+        }
+      ],
+      "forbidden_strings": [
+        "1180000",
+        "1490000",
+        "1620000",
+        "2050000",
+        "2210000",
+        "2380000",
+        "3150000",
+        "64500",
+        "66000",
+        "890000"
+      ],
+      "context": "[02-remote-work.md#hybrid-schedule] Remote and hybrid work: Hybrid schedule\nKuzey Labs is hybrid. Each office has two **anchor days** when teams are expected in the office:\n\n| Office | Anchor days |\n|---|---|\n| Istanbul | Tuesday and Thursday |\n| Ankara | Monday and Wednesday |\n| Berlin | Tuesday and Wednesday |\n\nOutside anchor days you choose where you work. Agree exceptions with your team lead."
+    },
+    {
+      "eval_case_id": "per_diem",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What is the daily allowance for a business trip to Germany?"
+          }
+        ]
+      },
+      "expected_agent": "hr_policy_agent",
+      "expected_tool_calls": [
+        {
+          "name": "handbook_search"
+        }
+      ],
+      "forbidden_strings": [
+        "1180000",
+        "1490000",
+        "1620000",
+        "2050000",
+        "2210000",
+        "2380000",
+        "3150000",
+        "64500",
+        "66000",
+        "890000"
+      ],
+      "context": "[04-expenses-and-travel.md#per-diem] Expenses and travel: Per diem\n| Destination | Daily allowance |\n|---|---|\n| Turkey | TRY 1,500 |\n| EU | EUR 55 |\n| Rest of world | EUR 70 |"
+    },
+    {
+      "eval_case_id": "work_abroad",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can I work from Portugal for a few weeks? What are the rules?"
+          }
+        ]
+      },
+      "expected_agent": "hr_policy_agent",
+      "expected_tool_calls": [
+        {
+          "name": "handbook_search"
+        }
+      ],
+      "forbidden_strings": [
+        "1180000",
+        "1490000",
+        "1620000",
+        "2050000",
+        "2210000",
+        "2380000",
+        "3150000",
+        "64500",
+        "66000",
+        "890000"
+      ],
+      "context": "[02-remote-work.md#working-from-another-country] Remote and hybrid work: Working from another country\nYou can work from another country for up to **20 working days per calendar year**. Request it in the HRIS\nat least 2 weeks in advance so the People team can check tax and visa rules. Working from abroad is not\nleave and does not reduce your leave balance."
+    },
+    {
+      "eval_case_id": "ticket_priorities",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How fast does the IT desk respond to a P2 ticket?"
+          }
+        ]
+      },
+      "expected_agent": [
+        "hr_policy_agent",
+        "it_desk_agent"
+      ],
+      "expected_tool_calls": [
+        {
+          "name": "handbook_search"
+        }
+      ],
+      "forbidden_strings": [
+        "1180000",
+        "1490000",
+        "1620000",
+        "2050000",
+        "2210000",
+        "2380000",
+        "3150000",
+        "64500",
+        "66000",
+        "890000"
+      ],
+      "context": "[03-it-equipment-and-support.md#priorities-and-response-times] IT equipment and support: Priorities and response times\n| Priority | Meaning | First response |\n|---|---|---|\n| P1 | You cannot work at all, or a security incident | 30 minutes |\n| P2 | A major part of your work is blocked | 4 working hours |\n| P3 | Something is broken but there is a workaround | 1 working day |\n| P4 | A request or question | 3 working days |"
+    }
+  ]
+}

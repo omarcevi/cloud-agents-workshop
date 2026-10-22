@@ -1,12 +1,23 @@
 [
   {
-    "description": "The Workplace Assistant may call the Google APIs it runs on and the HR and IT MCP servers.",
+    "description": "The Workplace Assistant may call the Google APIs it runs on (one registered endpoint).",
     "effect": "ALLOW",
     "principals": ["AGENT_PRINCIPAL"],
     "operation": {"permissions": ["iap.googleapis.com/resources.egressViaIAP"]},
     "conditions": {
       "iap.googleapis.com": {
-        "expression": "destination.agent_registry.endpoint.name == 'GOOGLE_APIS_ENDPOINT' || destination.agent_registry.mcp_server.name in ['HRIS_MCP_SERVER', 'TICKETING_MCP_SERVER']"
+        "expression": "destination.agent_registry.resource_type == 'ENDPOINT' && destination.agent_registry.endpoint.name == 'GOOGLE_APIS_ENDPOINT'"
+      }
+    }
+  },
+  {
+    "description": "The Workplace Assistant may call the HRIS and ticketing MCP servers.",
+    "effect": "ALLOW",
+    "principals": ["AGENT_PRINCIPAL"],
+    "operation": {"permissions": ["iap.googleapis.com/resources.egressViaIAP"]},
+    "conditions": {
+      "iap.googleapis.com": {
+        "expression": "destination.agent_registry.resource_type == 'MCP_SERVER' && destination.agent_registry.mcp_server.name in ['HRIS_MCP_SERVER', 'TICKETING_MCP_SERVER']"
       }
     }
   },
@@ -17,7 +28,7 @@
     "operation": {"permissions": ["iap.googleapis.com/resources.egressViaIAP"]},
     "conditions": {
       "iap.googleapis.com": {
-        "expression": "destination.agent_registry.mcp_server.name == 'COMPENSATION_MCP_SERVER'"
+        "expression": "destination.agent_registry.resource_type == 'MCP_SERVER' && destination.agent_registry.mcp_server.name == 'COMPENSATION_MCP_SERVER'"
       }
     }
   }

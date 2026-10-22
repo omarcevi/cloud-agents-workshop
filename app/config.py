@@ -17,11 +17,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # fast_api_app.py calls load_dotenv(). Load it here; existing env vars win.
 load_dotenv(REPO_ROOT / ".env")
 
-# Gemini 3.x Flash is served from the `eu` and `global` endpoints, not from europe-west1,
-# so the model location is set here instead of following the agent's region. `eu` keeps
-# processing in the EU and was the more consistent of the two in testing.
+# Gemini 3.x Flash is served from the `global` and `eu` endpoints, not from europe-west1,
+# so the model location is set here instead of following the agent's region.
+# Use `global` on Agent Runtime: with Agent Identity the SDK switches to mTLS hostnames,
+# and the `eu` endpoint has none (aiplatform.eu.rep.mtls.googleapis.com does not
+# resolve). `eu` works for local runs. Details: docs/VERIFIED.md.
 MODEL = os.environ.get("MODEL", "gemini-3.8-flash")
-MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "eu")
+MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "global")
 # LOW thinking answers these routing and tool-calling turns about 3x faster than the
 # default with the same results in the eval set.
 THINKING_LEVEL = os.environ.get("THINKING_LEVEL", "LOW")

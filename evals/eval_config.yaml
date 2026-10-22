@@ -1,0 +1,14 @@
+# Metrics for evals/datasets/behaviour.json. All three run locally (no Eval Service).
+# Thresholds live in evals/thresholds.yaml; agents-cli has no threshold option and
+# exits 0 whatever the scores, so scripts/eval.sh runs evals/gate.py afterwards.
+metrics_to_run:
+  - routed_to_expected_agent
+  - tool_trajectory
+  - no_compensation_leak
+custom_metrics:
+  - name: routed_to_expected_agent
+    custom_function_file: metrics/routing.py
+  - name: tool_trajectory
+    custom_function_file: metrics/trajectory.py
+  - name: no_compensation_leak
+    custom_function_file: metrics/no_compensation_leak.py

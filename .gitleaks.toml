@@ -1,0 +1,7 @@
+# Workshop data is fictional; the only things that look like secrets are test fixtures.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fictional seed data and vendored schemas"
+paths = ['''data/seed/.*\.json''', '''tests/schemas/.*''']
