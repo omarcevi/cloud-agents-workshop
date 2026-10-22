@@ -9,6 +9,7 @@ concierge (routes, small talk, refuses out-of-scope)
 from __future__ import annotations
 
 import datetime as dt
+import os
 from zoneinfo import ZoneInfo
 
 from google.adk.agents import Agent
@@ -173,18 +174,59 @@ it_desk_agent = Agent(
     after_tool_callback=audit_tool_result,
 )
 
-root_agent = Agent(
-    # Keep in sync with create_params.root_agent_name in agents-cli-manifest.yaml:
-    # telemetry reports this name as gen_ai.agent.name.
-    name="concierge",
-    model=gemini(),
-    generate_content_config=GENERATION,
-    description="Front door of the Kuzey Labs Workplace Assistant.",
-    instruction=CONCIERGE_INSTRUCTION,
-    sub_agents=[hr_policy_agent, leave_agent, it_desk_agent],
-    tools=[PreloadMemoryTool()],
-    after_tool_callback=audit_tool_result,
-)
+# A2A test only (branch test/a2a). A2A_TEST_ROLE=it_desk serves it_desk_agent on its own;
+# A2A_TEST_ROLE=concierge calls that deployment over A2A instead of running it_desk_agent
+# in-process. Unset: the normal single deployment.
+A2A_TEST_ROLE = os.environ.get("A2A_TEST_ROLE", "")
+
+
+def _remote_it_desk():  # type: ignore[no-untyped-def]
+    import google.auth
+    import google.auth.transport.requests
+    import httpx
+    from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
+
+    class _GoogleAuth(httpx.Auth):
+        """Bearer token from the agent's own identity, for the Agent Runtime A2A endpoint."""
+
+        def __init__(self) -> None:
+            self._creds, _ = google.auth.default(
+                scopes=["https://www.googleapis.com/auth/cloud-platform"]
+            )
+
+        def auth_flow(self, request):  # type: ignore[no-untyped-def]
+            if not self._creds.valid:
+                self._creds.refresh(google.auth.transport.requests.Request())
+            request.headers["Authorization"] = f"Bearer {self._creds.token}"
+            yield request
+
+    return RemoteA2aAgent(
+        name="it_desk_agent",
+        agent_card=os.environ["IT_DESK_A2A_CARD"],
+        description=it_desk_agent.description,
+        httpx_client=httpx.AsyncClient(auth=_GoogleAuth(), timeout=180),
+    )
+
+
+if A2A_TEST_ROLE == "it_desk":
+    root_agent = it_desk_agent
+else:
+    root_agent = Agent(
+        # Keep in sync with create_params.root_agent_name in agents-cli-manifest.yaml:
+        # telemetry reports this name as gen_ai.agent.name.
+        name="concierge",
+        model=gemini(),
+        generate_content_config=GENERATION,
+        description="Front door of the Kuzey Labs Workplace Assistant.",
+        instruction=CONCIERGE_INSTRUCTION,
+        sub_agents=[
+            hr_policy_agent,
+            leave_agent,
+            _remote_it_desk() if A2A_TEST_ROLE == "concierge" else it_desk_agent,
+        ],
+        tools=[PreloadMemoryTool()],
+        after_tool_callback=audit_tool_result,
+    )
 
 app = App(
     root_agent=root_agent,
