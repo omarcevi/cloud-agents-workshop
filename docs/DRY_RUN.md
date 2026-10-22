@@ -36,6 +36,14 @@ are where the instructor explains the next concept.
 | Check 5 found one tool span: with the office already in Memory Bank, the leave agent skipped `get_my_profile` | Step 5's prompt asks for the remaining balance too, so the trace always has two tool calls |
 | `memory_bank.py list` said memories take "a few seconds" | Now "about a minute" |
 
+### Found after the run
+
+| Problem | Fix |
+|---|---|
+| `teardown.sh` left two IAM bindings: `roles/agentregistry.viewer` on deleted agents' identities (from `secure.sh`) and `roles/observability.viewAccessor` on the Vertex AI service agent (from `monitor.sh`). Not billable, but not "nothing left" | Teardown removes both, sweeps bindings of any agent identity whose instance no longer exists, and `--verify-only` checks for them |
+| The guide's Open in Cloud Shell button had no `cloudshell_git_branch` (default `master`) | Button and README link name `main` and open `tutorial.md` with the repo as workspace |
+| Two generated files (`.setup-dashboard.json`, `.setup-egress-rules.json`, with the test project's ID and number) were committed | Untracked; `.gitignore` covers `.setup-*` |
+
 ### Problems found and fixed before this run (rehearsal on 2026-10-22, run 1)
 
 | Problem | Fix |

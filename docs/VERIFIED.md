@@ -146,6 +146,16 @@ Launch stages change often. Re-check the "Status" column the week of the event.
 | `agents-cli scaffold enhance . --deployment-target gke` | — | --help only | [agents-cli](https://github.com/google/agents-cli) |
 | Retrieval upgrade path: ADK `VertexAiRagRetrieval`, `VertexAiSearchTool` | — | source (classes import in ADK 2.12.0); not run | [ADK](https://adk.dev/) |
 
+### Cloud Shell tutorial (`tutorial.md`)
+
+| What | Verified how | Doc |
+|---|---|---|
+| Launch link `https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/omarcevi/cloud-agents-workshop.git&cloudshell_git_branch=main&cloudshell_tutorial=tutorial.md&cloudshell_workspace=.&show=ide%2Cterminal` | live. `cloudshell_git_branch` defaults to `master`, so it must name `main`. Without `cloudshell_workspace=.` the editor opens the home folder and `walkthrough-editor-open-file` links do nothing | [Open in Cloud Shell](https://docs.cloud.google.com/shell/docs/open-in-cloud-shell) |
+| The repo is not allow-listed by Google: Cloud Shell asks to **Trust repo** (otherwise ephemeral mode, files deleted at session end), then to **Authorize** credentials | live | same |
+| Opening the link again clones a second copy (`cloud-agents-workshop-0`) whose `origin` is the first local clone, not GitHub | live | — |
+| Directives `walkthrough-project-setup billing="true"`, `walkthrough-project-id` (also inside console link URLs and code blocks), `walkthrough-editor-open-file`, `walkthrough-tutorial-duration`, `walkthrough-conclusion-trophy` | live (rendered and clicked in the panel) | [Tutorials](https://docs.cloud.google.com/shell/docs/tutorials), [project directives](https://docs.cloud.google.com/shell/docs/cloud-shell-tutorials/directives-project-setup) |
+| No directive runs a command or checks state; inline HTML styles are stripped; a tight numbered list is the only layout that keeps an instruction close to its command | live, directive reference | same |
+
 ### Teardown
 
 | Command / API | Verified how |

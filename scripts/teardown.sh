@@ -46,7 +46,8 @@ delete_everything() {
     api DELETE "${AR_HOST}/${name}?force=true" >/dev/null && ok "deleted ${name##*/}"
     if [[ -n "${identity}" ]]; then
       for role in roles/aiplatform.user roles/serviceusage.serviceUsageConsumer roles/browser \
-                  roles/cloudapiregistry.viewer roles/logging.logWriter roles/monitoring.metricWriter; do
+                  roles/cloudapiregistry.viewer roles/logging.logWriter roles/monitoring.metricWriter \
+                  roles/agentregistry.viewer; do
         quiet gcloud projects remove-iam-policy-binding "${PROJECT_ID}" \
           --member "principal://${identity}" --role "${role}" --condition None --quiet || true
       done
@@ -58,6 +59,21 @@ delete_everything() {
   for name in $(online_evaluators); do
     api DELETE "${AR_HOST}/${name}" >/dev/null && ok "deleted ${name##*/}"
   done
+  # monitor.sh let the Vertex AI service agent read traces; take it back once no monitor is left.
+  if [[ -z "$(online_evaluators)" ]]; then
+    quiet gcloud projects remove-iam-policy-binding "${PROJECT_ID}" --member "serviceAccount:$(monitor_agent)" \
+      --role roles/observability.viewAccessor --condition None --quiet || true
+    ok "service agent role for monitors removed"
+  fi
+
+  log "IAM bindings of agents that no longer exist"
+  local member role
+  while IFS=$'\t' read -r role member; do
+    [[ -n "${member}" ]] || continue
+    quiet gcloud projects remove-iam-policy-binding "${PROJECT_ID}" --member "${member}" --role "${role}" \
+      --condition None --quiet || true
+    ok "removed ${role} from ${member##*/}"
+  done < <(dangling_agent_bindings)
 
   log "Agent Gateway policies and gateway"
   quiet gcloud iam policy-bindings delete workplace-egress-binding --project "${PROJECT_ID}" --location global --quiet && ok "policy binding"
@@ -103,6 +119,23 @@ delete_everything() {
   ok "local state (.workshop.env, deployment_metadata.json)"
 }
 
+monitor_agent() { printf 'service-%s@gcp-sa-aiplatform.iam.gserviceaccount.com' "${PROJECT_NUMBER}"; }
+
+# Project-level role bindings (ROLE<TAB>MEMBER) of Agent Identity principals in this region
+# whose Agent Runtime instance no longer exists.
+dangling_agent_bindings() {
+  local live prefix
+  live="$(agent_resources | sed 's#.*/##' | tr '\n' ' ')"
+  prefix="principal://agents.global.proj-${PROJECT_NUMBER}.system.id.goog/resources/aiplatform/projects/${PROJECT_NUMBER}/locations/${REGION}/reasoningEngines/"
+  gcloud projects get-iam-policy "${PROJECT_ID}" --flatten='bindings[].members' \
+      --format='value(bindings.role,bindings.members)' 2>/dev/null \
+    | while IFS=$'\t' read -r role member; do
+        [[ "${member}" == "${prefix}"* ]] || continue
+        [[ " ${live} " == *" ${member##*/} "* ]] && continue
+        printf '%s\t%s\n' "${role}" "${member}"
+      done
+}
+
 # Print anything the workshop created that still exists. Returns 1 if anything is left.
 verify() {
   log "Checking for leftovers"
@@ -126,6 +159,12 @@ verify() {
     --filter="name~/${AR_REPO}$" --format='value(name)'
   check "logs-based metrics" gcloud logging metrics list --project "${PROJECT_ID}" --filter='name~^workplace_' --format='value(name)'
   check "dashboards" dashboards
+  check "IAM bindings of deleted agents" dangling_agent_bindings
+  if [[ -z "$(online_evaluators)" ]]; then
+    check "monitor role on the Vertex AI service agent" gcloud projects get-iam-policy "${PROJECT_ID}" \
+      --flatten='bindings[].members' --filter="bindings.role=roles/observability.viewAccessor AND bindings.members:$(monitor_agent)" \
+      --format='value(bindings.role)'
+  fi
   check "auth providers" gcloud agent-identity auth-providers list --location "${REGION}" --project "${PROJECT_ID}" --filter='name~calendar-3lo' --format='value(name)'
   return "${left}"
 }
