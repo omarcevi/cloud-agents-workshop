@@ -8,9 +8,9 @@ calls, follow a request through **Cloud Trace**, and gate changes with **evals**
 
 **Follow-along guide (start here):** https://omarcevi.dev/workshops/deploy-agents-workshop/
 
-**Or follow it step by step inside Cloud Shell** (opens the repo with a guided tutorial panel). In the dialog, tick **Trust repo**, then **Confirm**; otherwise Cloud Shell runs in ephemeral mode and deletes your files when the session ends:
+**Or follow it step by step inside Cloud Shell** (opens the repo with a guided tutorial panel). In the dialog, tick **Trust repo**, then **Confirm**; otherwise Cloud Shell runs in ephemeral mode and deletes your files when the session ends. Open it once: each click clones another copy (`cloud-agents-workshop-0`, ...):
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/omarcevi/cloud-agents-workshop.git&cloudshell_git_branch=main&cloudshell_tutorial=tutorial.md&show=ide%2Cterminal)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/omarcevi/cloud-agents-workshop.git&cloudshell_git_branch=main&cloudshell_tutorial=tutorial.md&cloudshell_workspace=.&show=ide%2Cterminal)
 
 Everything here is fictional: Kuzey Labs, its employees, handbook, salaries and tickets.
 

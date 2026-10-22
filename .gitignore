@@ -216,7 +216,7 @@ credentials*.json
 # Workshop state (per participant project)
 .env
 .workshop.env
-.setup-*.log
+.setup-*
 deployment_metadata.json
 artifacts/
 .google-agents-cli/
