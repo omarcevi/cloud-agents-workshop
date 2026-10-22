@@ -33,13 +33,16 @@ gcloud projects add-iam-policy-binding "${PROJECT_ID}" --member "serviceAccount:
 gcloud iam workload-identity-pools describe "${POOL}" --location global --project "${PROJECT_ID}" >/dev/null 2>&1 \
   || gcloud iam workload-identity-pools create "${POOL}" --location global --project "${PROJECT_ID}" \
        --display-name "GitHub Actions (workshop E2E)"
+# Create or update, so a re-run also tightens an existing provider. The condition requires
+# the e2e environment too, so its approval gate is enforced on the Google Cloud side.
+PROVIDER_ACTION=create-oidc
 gcloud iam workload-identity-pools providers describe "${PROVIDER}" --workload-identity-pool "${POOL}" \
-    --location global --project "${PROJECT_ID}" >/dev/null 2>&1 \
-  || gcloud iam workload-identity-pools providers create-oidc "${PROVIDER}" \
-       --workload-identity-pool "${POOL}" --location global --project "${PROJECT_ID}" \
-       --issuer-uri https://token.actions.githubusercontent.com \
-       --attribute-mapping "google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref,attribute.workflow_ref=assertion.workflow_ref" \
-       --attribute-condition "assertion.repository == '${REPO}' && assertion.ref == 'refs/heads/main' && assertion.workflow_ref == '${REPO}/.github/workflows/e2e.yml@refs/heads/main'"
+    --location global --project "${PROJECT_ID}" >/dev/null 2>&1 && PROVIDER_ACTION=update-oidc
+gcloud iam workload-identity-pools providers "${PROVIDER_ACTION}" "${PROVIDER}" \
+  --workload-identity-pool "${POOL}" --location global --project "${PROJECT_ID}" \
+  --issuer-uri https://token.actions.githubusercontent.com \
+  --attribute-mapping "google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref,attribute.workflow_ref=assertion.workflow_ref,attribute.environment=assertion.environment" \
+  --attribute-condition "assertion.repository == '${REPO}' && assertion.ref == 'refs/heads/main' && assertion.workflow_ref == '${REPO}/.github/workflows/e2e.yml@refs/heads/main' && assertion.environment == 'e2e'"
 
 gcloud iam service-accounts add-iam-policy-binding "${SA}" --project "${PROJECT_ID}" \
   --role roles/iam.workloadIdentityUser --quiet >/dev/null \
