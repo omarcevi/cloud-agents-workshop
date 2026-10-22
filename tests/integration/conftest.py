@@ -19,7 +19,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 if os.environ.get("RUN_INTEGRATION") != "1":
-    pytest.skip("set RUN_INTEGRATION=1 to run integration tests", allow_module_level=True)
+    pytest.skip(
+        "set RUN_INTEGRATION=1 to run integration tests", allow_module_level=True
+    )
 
 
 def _free_port() -> int:

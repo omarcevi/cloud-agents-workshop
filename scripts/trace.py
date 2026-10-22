@@ -29,7 +29,9 @@ def _time(value: str) -> dt.datetime:
 
 
 def find_trace(project: str, trace_filter: str, minutes: int) -> dict[str, Any] | None:
-    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
     http = AuthorizedSession(credentials)
     base = f"https://cloudtrace.googleapis.com/v1/projects/{project}/traces"
     since = dt.datetime.now(dt.UTC) - dt.timedelta(minutes=minutes)
@@ -40,7 +42,7 @@ def find_trace(project: str, trace_filter: str, minutes: int) -> dict[str, Any] 
             "startTime": since.isoformat(),
             "view": "MINIMAL",
             "orderBy": "start desc",
-            "pageSize": 1,
+            "pageSize": "1",
         },
         timeout=60,
     )
@@ -58,12 +60,20 @@ def summarize(trace: dict[str, Any]) -> dict[str, Any]:
     """Count what a check needs. Spans that are still arriving are simply not counted yet."""
     spans = sorted(trace["spans"], key=lambda s: s["startTime"])
     names = [s["name"] for s in spans]
-    sub_agent_spans = [n for n in names if n.startswith("invoke_agent ") and n.split(" ", 1)[1] in SUB_AGENTS]
+    sub_agent_spans = [
+        n
+        for n in names
+        if n.startswith("invoke_agent ") and n.split(" ", 1)[1] in SUB_AGENTS
+    ]
     tool_spans = [
-        n for n in names if n.startswith("execute_tool ") and n != "execute_tool transfer_to_agent"
+        n
+        for n in names
+        if n.startswith("execute_tool ") and n != "execute_tool transfer_to_agent"
     ]
     errors = [
-        f"{s['name']}: {s['labels']['error.type']}" for s in spans if "error.type" in s.get("labels", {})
+        f"{s['name']}: {s['labels']['error.type']}"
+        for s in spans
+        if "error.type" in s.get("labels", {})
     ]
     return {
         "trace_id": trace["traceId"],
@@ -98,16 +108,30 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Show a Workplace Assistant trace.")
     parser.add_argument("--project", default=None)
     parser.add_argument("--session", help="ADK session id (gen_ai.conversation.id)")
-    parser.add_argument("--span", default=DEFAULT_SPAN, help=f"span name to look for (default: {DEFAULT_SPAN!r})")
+    parser.add_argument(
+        "--span",
+        default=DEFAULT_SPAN,
+        help=f"span name to look for (default: {DEFAULT_SPAN!r})",
+    )
     parser.add_argument("--minutes", type=int, default=120, help="how far back to look")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    project = args.project or google.auth.default()[1]
-    trace_filter = f"+gen_ai.conversation.id:{args.session}" if args.session else f'+span:"{args.span}"'
+    project = str(args.project or google.auth.default()[1])
+    trace_filter = (
+        f"+gen_ai.conversation.id:{args.session}"
+        if args.session
+        else f'+span:"{args.span}"'
+    )
     trace = find_trace(project, trace_filter, args.minutes)
     if not trace:
-        print(f"No trace matching {trace_filter} in the last {args.minutes} minutes.", file=sys.stderr)
-        print("Traces take a minute or two to arrive in Cloud Trace. Try again shortly.", file=sys.stderr)
+        print(
+            f"No trace matching {trace_filter} in the last {args.minutes} minutes.",
+            file=sys.stderr,
+        )
+        print(
+            "Traces take a minute or two to arrive in Cloud Trace. Try again shortly.",
+            file=sys.stderr,
+        )
         return 1
     if args.json:
         print(json.dumps(summarize(trace)))

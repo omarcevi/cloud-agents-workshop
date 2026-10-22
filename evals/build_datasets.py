@@ -21,7 +21,13 @@ sys.path.insert(0, str(ROOT))
 from app.tools.handbook import get_index  # noqa: E402
 
 OUT = ROOT / "evals" / "datasets"
-CASE_FIELDS = ("expected_agent", "expected_tool_calls", "forbidden_tools", "must_refuse", "note")
+CASE_FIELDS = (
+    "expected_agent",
+    "expected_tool_calls",
+    "forbidden_tools",
+    "must_refuse",
+    "note",
+)
 
 
 def forbidden_salary_strings() -> list[str]:
@@ -69,7 +75,9 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, dataset in build().items():
         path = OUT / f"{name}.json"
-        path.write_text(json.dumps(dataset, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(dataset, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
         print(f"{path.relative_to(ROOT)}: {len(dataset['eval_cases'])} cases")
 
 

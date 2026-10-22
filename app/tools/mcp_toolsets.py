@@ -49,7 +49,9 @@ COMPENSATION_TOOLS = {
 }
 
 
-def header_provider(server: str) -> Callable[[ReadonlyContext], Awaitable[dict[str, str]]]:
+def header_provider(
+    server: str,
+) -> Callable[[ReadonlyContext], Awaitable[dict[str, str]]]:
     """Build the per-request headers for one MCP server."""
     base_url = config.mcp_base_url(server)
 
@@ -80,7 +82,9 @@ class UnavailableTool(BaseTool):
             parameters_json_schema={"type": "object", "properties": {}},
         )
 
-    async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> Any:
+    async def run_async(
+        self, *, args: dict[str, Any], tool_context: ToolContext
+    ) -> Any:
         return {
             "status": "unavailable",
             "error": f"The {self.server} server refused this call: {self.error}",
@@ -116,15 +120,23 @@ class GuardedMcpToolset(McpToolset):
         self.server = server
         self.expected_tools = expected_tools
 
-    async def get_tools(self, readonly_context: ReadonlyContext | None = None) -> list[BaseTool]:
+    async def get_tools(
+        self, readonly_context: ReadonlyContext | None = None
+    ) -> list[BaseTool]:
         try:
             return await super().get_tools(readonly_context)
         except Exception as exc:  # the server, IAM or the gateway refused tools/list
             headers = await self._build_headers(readonly_context)
-            detail = await diagnose(self._connection_params.url, headers or {})
-            _log.warning("Could not list tools on %s: %s (%s)", self.server, exc, detail)
+            params = self._connection_params
+            assert isinstance(params, StreamableHTTPConnectionParams)
+            detail = await diagnose(params.url, headers or {})
+            _log.warning(
+                "Could not list tools on %s: %s (%s)", self.server, exc, detail
+            )
             return [
-                UnavailableTool(name=name, description=desc, server=self.server, error=detail)
+                UnavailableTool(
+                    name=name, description=desc, server=self.server, error=detail
+                )
                 for name, desc in self.expected_tools.items()
             ]
 

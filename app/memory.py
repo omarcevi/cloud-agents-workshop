@@ -25,12 +25,18 @@ class MemoryBankPlugin(BasePlugin):
     def __init__(self) -> None:
         super().__init__(name="memory_bank")
 
-    async def after_run_callback(self, *, invocation_context: InvocationContext) -> None:
+    async def after_run_callback(
+        self, *, invocation_context: InvocationContext
+    ) -> None:
         memory = invocation_context.memory_service
         if memory is None:
             return
         session = invocation_context.session
-        events = [e for e in session.events if e.invocation_id == invocation_context.invocation_id]
+        events = [
+            e
+            for e in session.events
+            if e.invocation_id == invocation_context.invocation_id
+        ]
         if not events:
             return
         try:

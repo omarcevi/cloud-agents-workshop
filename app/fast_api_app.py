@@ -50,7 +50,9 @@ def _forward_python_warnings_to_cloud_logging() -> None:
     from opentelemetry._logs import get_logger_provider
     from opentelemetry.sdk._logs import LoggingHandler
 
-    handler = LoggingHandler(level=logging.WARNING, logger_provider=get_logger_provider())
+    handler = LoggingHandler(
+        level=logging.WARNING, logger_provider=get_logger_provider()
+    )
     logging.getLogger().addHandler(handler)
 
 

@@ -23,7 +23,9 @@ def _resolve(value):
 
 
 def _same(actual, expected):
-    return str(actual).strip().lower() in [str(v).strip().lower() for v in _resolve(expected)]
+    return str(actual).strip().lower() in [
+        str(v).strip().lower() for v in _resolve(expected)
+    ]
 
 
 def _calls(instance):
@@ -48,10 +50,17 @@ def evaluate(instance):
             name == want["name"] and all(_same(got.get(k), v) for k, v in args.items())
             for name, got in calls
         ):
-            missing.append({"name": want["name"], "args": {k: _resolve(v) for k, v in args.items()}})
+            missing.append(
+                {
+                    "name": want["name"],
+                    "args": {k: _resolve(v) for k, v in args.items()},
+                }
+            )
     used_forbidden = sorted({name for name, _ in calls if name in forbidden})
     found = len(expected) - len(missing)
-    score = (found / len(expected) if expected else 1.0) * (0.0 if used_forbidden else 1.0)
+    score = (found / len(expected) if expected else 1.0) * (
+        0.0 if used_forbidden else 1.0
+    )
     called = [name for name, _ in calls if name != "transfer_to_agent"]
     return {
         "score": score,

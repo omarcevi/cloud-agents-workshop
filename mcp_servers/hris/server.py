@@ -19,10 +19,16 @@ from mcp_servers.common import audit, caller_email, create_server, load_seed, se
 
 SERVER = "hris"
 READ_ONLY = ToolAnnotations(
-    readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+    read_only_hint=True,
+    destructive_hint=False,
+    idempotent_hint=True,
+    open_world_hint=False,
 )
 WRITE = ToolAnnotations(
-    readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False
+    read_only_hint=False,
+    destructive_hint=False,
+    idempotent_hint=False,
+    open_world_hint=False,
 )
 
 LeaveType = Literal["ANNUAL", "ANNUAL_HALF_DAY", "SICK", "UNPAID"]
@@ -40,9 +46,7 @@ _requests: list[dict[str, Any]] = []
 def reset() -> None:
     """Reload the seed data. Tests call this to start from a known state."""
     _employees.clear()
-    _employees.update(
-        {e["email"]: e for e in load_seed("employees.json")["employees"]}
-    )
+    _employees.update({e["email"]: e for e in load_seed("employees.json")["employees"]})
     leave = load_seed("leave.json")
     _balances.clear()
     _balances.update(copy.deepcopy(leave["balances"]))
@@ -139,7 +143,10 @@ def list_leave_requests() -> list[dict[str, Any]]:
 def submit_leave_request(
     start_date: Annotated[str, Field(description="First day of leave, YYYY-MM-DD.")],
     end_date: Annotated[
-        str, Field(description="Last day of leave, YYYY-MM-DD. Same as start_date for one day.")
+        str,
+        Field(
+            description="Last day of leave, YYYY-MM-DD. Same as start_date for one day."
+        ),
     ],
     leave_type: LeaveType = "ANNUAL",
     note: str = "",
@@ -155,7 +162,9 @@ def submit_leave_request(
     if end < start:
         raise ToolError("end_date is before start_date.")
     if start < _today():
-        raise ToolError(f"{start_date} is in the past. Today is {_today().isoformat()}.")
+        raise ToolError(
+            f"{start_date} is in the past. Today is {_today().isoformat()}."
+        )
     days: float = _working_days(start, end)
     if days == 0:
         raise ToolError("The requested dates fall on a weekend.")

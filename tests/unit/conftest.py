@@ -26,7 +26,9 @@ def _free_port() -> int:
         return int(s.getsockname()[1])
 
 
-PORTS = {name: _free_port() for name in ("hris", "ticketing", "compensation", "forbidden")}
+PORTS = {
+    name: _free_port() for name in ("hris", "ticketing", "compensation", "forbidden")
+}
 
 os.environ.update(
     {
@@ -51,7 +53,9 @@ async def _forbidden(request: Request) -> PlainTextResponse:
 
 
 def _serve(app, port: int) -> uvicorn.Server:
-    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
+    server = uvicorn.Server(
+        uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
+    )
     threading.Thread(target=server.run, daemon=True).start()
     deadline = time.monotonic() + 10
     while not server.started:
@@ -72,7 +76,11 @@ def mcp_servers() -> Iterator[dict[str, int]]:
         _serve(ticketing.mcp.http_app(stateless_http=True), PORTS["ticketing"]),
         _serve(compensation.mcp.http_app(stateless_http=True), PORTS["compensation"]),
         _serve(
-            Starlette(routes=[Route("/{path:path}", _forbidden, methods=["GET", "POST", "DELETE"])]),
+            Starlette(
+                routes=[
+                    Route("/{path:path}", _forbidden, methods=["GET", "POST", "DELETE"])
+                ]
+            ),
             PORTS["forbidden"],
         ),
     ]

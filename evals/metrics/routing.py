@@ -14,7 +14,13 @@ def evaluate(instance):
     for turn in (instance.get("agent_data") or {}).get("turns") or []:
         for event in turn.get("events") or []:
             parts = (event.get("content") or {}).get("parts") or []
-            if any(p.get("text") for p in parts) and event.get("author") not in (None, "user"):
+            if any(p.get("text") for p in parts) and event.get("author") not in (
+                None,
+                "user",
+            ):
                 answered_by = event.get("author")
     score = 1.0 if answered_by in expected else 0.0
-    return {"score": score, "explanation": f"answered by {answered_by}, expected {expected}"}
+    return {
+        "score": score,
+        "explanation": f"answered by {answered_by}, expected {expected}",
+    }

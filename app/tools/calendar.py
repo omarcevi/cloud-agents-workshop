@@ -23,7 +23,10 @@ CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 
 async def create_calendar_event(
-    summary: str, start_date: str, end_date: str, credential: AuthCredential | None = None
+    summary: str,
+    start_date: str,
+    end_date: str,
+    credential: AuthCredential | None = None,
 ) -> dict[str, Any]:
     """Add an all-day event, such as approved leave, to the employee's own Google Calendar.
 
@@ -32,9 +35,13 @@ async def create_calendar_event(
         start_date: First day, YYYY-MM-DD.
         end_date: Last day (inclusive), YYYY-MM-DD.
     """
-    token = credential.http.credentials.token if credential and credential.http else None
+    token = (
+        credential.http.credentials.token if credential and credential.http else None
+    )
     if not token:
-        return {"error": "No calendar authorization yet. The employee needs to grant access."}
+        return {
+            "error": "No calendar authorization yet. The employee needs to grant access."
+        }
     end_exclusive = dt.date.fromisoformat(end_date) + dt.timedelta(days=1)
     event = {
         "summary": summary,
@@ -49,9 +56,15 @@ async def create_calendar_event(
             json=event,
         )
     if response.status_code >= 400:
-        return {"error": f"Calendar API returned {response.status_code}: {response.text[:200]}"}
+        return {
+            "error": f"Calendar API returned {response.status_code}: {response.text[:200]}"
+        }
     created = response.json()
-    return {"status": "created", "event_id": created.get("id"), "link": created.get("htmlLink")}
+    return {
+        "status": "created",
+        "event_id": created.get("id"),
+        "link": created.get("htmlLink"),
+    }
 
 
 def calendar_tools() -> list[Any]:
@@ -61,7 +74,10 @@ def calendar_tools() -> list[Any]:
     # Needs the google-adk[agent-identity] extra.
     from google.adk.auth.auth_tool import AuthConfig
     from google.adk.auth.credential_manager import CredentialManager
-    from google.adk.integrations.agent_identity import GcpAuthProvider, GcpAuthProviderScheme
+    from google.adk.integrations.agent_identity import (
+        GcpAuthProvider,
+        GcpAuthProviderScheme,
+    )
     from google.adk.tools.authenticated_function_tool import AuthenticatedFunctionTool
 
     CredentialManager.register_auth_provider(GcpAuthProvider())
@@ -70,4 +86,6 @@ def calendar_tools() -> list[Any]:
             name=config.CALENDAR_AUTH_PROVIDER, scopes=CALENDAR_SCOPES
         )
     )
-    return [AuthenticatedFunctionTool(func=create_calendar_event, auth_config=auth_config)]
+    return [
+        AuthenticatedFunctionTool(func=create_calendar_event, auth_config=auth_config)
+    ]

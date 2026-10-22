@@ -40,7 +40,9 @@ def gemini() -> Gemini:
 
 
 GENERATION = types.GenerateContentConfig(
-    thinking_config=types.ThinkingConfig(thinking_level=config.THINKING_LEVEL),
+    thinking_config=types.ThinkingConfig(
+        thinking_level=types.ThinkingLevel(config.THINKING_LEVEL)
+    ),
     # Shared model capacity occasionally stalls a call for minutes. Give up after
     # MODEL_TIMEOUT_SECONDS and retry instead of leaving the employee waiting.
     http_options=types.HttpOptions(
@@ -134,7 +136,9 @@ hr_policy_agent = Agent(
         handbook_search,
         # get_salary is deliberately not listed: the agent only needs bands. The server
         # still holds individual salaries, which is why step 4 blocks it at the gateway.
-        mcp_toolset("compensation", {"get_salary_band": COMPENSATION_TOOLS["get_salary_band"]}),
+        mcp_toolset(
+            "compensation", {"get_salary_band": COMPENSATION_TOOLS["get_salary_band"]}
+        ),
         PreloadMemoryTool(),
     ],
     after_tool_callback=audit_tool_result,
@@ -161,7 +165,11 @@ it_desk_agent = Agent(
     generate_content_config=GENERATION,
     description="Handles IT problems: opens IT tickets and reports ticket status.",
     instruction=IT_DESK_INSTRUCTION,
-    tools=[mcp_toolset("ticketing", TICKETING_TOOLS), handbook_search, PreloadMemoryTool()],
+    tools=[
+        mcp_toolset("ticketing", TICKETING_TOOLS),
+        handbook_search,
+        PreloadMemoryTool(),
+    ],
     after_tool_callback=audit_tool_result,
 )
 

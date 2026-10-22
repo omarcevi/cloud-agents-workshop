@@ -26,7 +26,9 @@ _STOPWORDS = frozenset(
 
 @dataclass(frozen=True)
 class Passage:
-    source: str  # file name and section anchor, for example 01-leave-policy.md#carry-over
+    source: (
+        str  # file name and section anchor, for example 01-leave-policy.md#carry-over
+    )
     title: str
     text: str
 
@@ -58,7 +60,7 @@ def split_sections(path: Path) -> list[Passage]:
     """Split one markdown file into passages at `##` headings (the `#` title is kept as context)."""
     doc_title = ""
     passages: list[Passage] = []
-    title, lines = "", []
+    title, lines = "", list[str]()
 
     def flush() -> None:
         body = "\n".join(lines).strip()
@@ -101,12 +103,16 @@ class BM25Index:
     def search(self, query: str, top_k: int = 3) -> list[tuple[Passage, float]]:
         terms = tokenize(query)
         scored = []
-        for passage, doc, length in zip(self.passages, self.docs, self.lengths, strict=True):
+        for passage, doc, length in zip(
+            self.passages, self.docs, self.lengths, strict=True
+        ):
             score = 0.0
             for term in terms:
                 tf = doc.get(term, 0)
                 if tf:
-                    norm = tf + self.k1 * (1 - self.b + self.b * length / self.avg_length)
+                    norm = tf + self.k1 * (
+                        1 - self.b + self.b * length / self.avg_length
+                    )
                     score += self.idf[term] * tf * (self.k1 + 1) / norm
             if score > 0:
                 scored.append((passage, score))
@@ -131,7 +137,10 @@ def handbook_search(query: str) -> dict:
     """
     results = get_index().search(query, top_k=3)
     if not results:
-        return {"passages": [], "note": "Nothing in the handbook matches. Say so; do not guess."}
+        return {
+            "passages": [],
+            "note": "Nothing in the handbook matches. Say so; do not guess.",
+        }
     return {
         "passages": [
             {"source": p.source, "title": p.title, "text": p.text, "score": round(s, 2)}

@@ -22,7 +22,11 @@ from mcp_servers.compensation import server as compensation  # noqa: E402
 from mcp_servers.hris import server as hris  # noqa: E402
 from mcp_servers.ticketing import server as ticketing  # noqa: E402
 
-SERVERS = {"hris": hris.mcp, "ticketing": ticketing.mcp, "compensation": compensation.mcp}
+SERVERS = {
+    "hris": hris.mcp,
+    "ticketing": ticketing.mcp,
+    "compensation": compensation.mcp,
+}
 OUT = ROOT / "infra" / "gateway" / "toolspecs"
 
 
@@ -35,7 +39,9 @@ async def toolspec(server) -> dict:
                 "name": t.name,
                 "description": t.description,
                 "inputSchema": t.input_schema,
-                "annotations": t.annotations.model_dump(by_alias=True, exclude_none=True),
+                "annotations": t.annotations.model_dump(
+                    by_alias=True, exclude_none=True
+                ),
             }
             for t in tools
         ]

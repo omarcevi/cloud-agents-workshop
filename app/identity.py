@@ -25,7 +25,13 @@ from app import config
 _log = logging.getLogger(__name__)
 
 # User ids that tools use when they run outside a real chat front end.
-_FIXED_LOCAL_USER_IDS = {"cli-user", "eval-cli-user", "user", "test_user", "default-user-id"}
+_FIXED_LOCAL_USER_IDS = {
+    "cli-user",
+    "eval-cli-user",
+    "user",
+    "test_user",
+    "default-user-id",
+}
 
 
 def employee_email(user_id: str | None) -> str:

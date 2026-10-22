@@ -22,7 +22,9 @@ _otel = get_logger("workplace.audit")
 # Agent Gateway's egress denial text, from its troubleshooting docs.
 _GATEWAY = re.compile(r"Egress request is not authorized|\b498\b", re.IGNORECASE)
 # Cloud Run (or any other server) refusing the agent's identity.
-_PERMISSION = re.compile(r"\b403\b|Forbidden|PERMISSION_DENIED|not have permission", re.IGNORECASE)
+_PERMISSION = re.compile(
+    r"\b403\b|Forbidden|PERMISSION_DENIED|not have permission", re.IGNORECASE
+)
 
 
 def classify(result: Any) -> str | None:
@@ -50,7 +52,13 @@ def log_blocked(tool: str, agent: str, reason: str, detail: str = "") -> None:
     On Agent Runtime the OTel record lands in Cloud Logging as jsonPayload with
     labels."event.name" and the active trace id.
     """
-    body = {"event": EVENT_NAME, "tool": tool, "agent": agent, "reason": reason, "detail": detail[:300]}
+    body = {
+        "event": EVENT_NAME,
+        "tool": tool,
+        "agent": agent,
+        "reason": reason,
+        "detail": detail[:300],
+    }
     _otel.emit(
         LogRecord(
             event_name=EVENT_NAME,
@@ -70,6 +78,10 @@ def audit_tool_result(
     """after_tool_callback: log refused calls, leave the result unchanged."""
     reason = classify(tool_response)
     if reason:
-        detail = str(tool_response.get("error", "")) if isinstance(tool_response, dict) else ""
+        detail = (
+            str(tool_response.get("error", ""))
+            if isinstance(tool_response, dict)
+            else ""
+        )
         log_blocked(tool.name, tool_context.agent_name, reason, detail)
     return None

@@ -25,7 +25,9 @@ def engine_name() -> str:
     meta = json.loads((ROOT / "deployment_metadata.json").read_text())
     name = meta.get("remote_agent_runtime_id")
     if not name:
-        sys.exit("No deployed agent in deployment_metadata.json. Run `agents-cli deploy` first.")
+        sys.exit(
+            "No deployed agent in deployment_metadata.json. Run `agents-cli deploy` first."
+        )
     return str(name)
 
 
@@ -52,9 +54,13 @@ def configure(name: str) -> None:
 
 def list_memories(name: str, user: str) -> int:
     scope = {"app_name": APP_NAME, "user_id": user}
-    found = list(client_for(name).memory_banks.memories.retrieve(name=name, scope=scope))
+    found = list(
+        client_for(name).memory_banks.memories.retrieve(name=name, scope=scope)
+    )
     if not found:
-        print(f"No memories yet for user {user!r}. Generation takes a few seconds after a turn.")
+        print(
+            f"No memories yet for user {user!r}. Generation takes a few seconds after a turn."
+        )
         return 1
     for item in found:
         memory = item.memory
@@ -79,7 +85,9 @@ def clear(name: str, user: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("command", choices=["configure", "list", "clear"])
-    parser.add_argument("--user", default="cli-user", help="ADK user id (default: cli-user)")
+    parser.add_argument(
+        "--user", default="cli-user", help="ADK user id (default: cli-user)"
+    )
     args = parser.parse_args()
     name = engine_name()
     if args.command == "configure":

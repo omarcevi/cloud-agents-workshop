@@ -29,12 +29,19 @@ CASES = ROOT / "evals" / "cases.yaml"
 
 
 def fetch_session(session_id: str, user: str) -> dict[str, Any]:
-    name = json.loads((ROOT / "deployment_metadata.json").read_text())["remote_agent_runtime_id"]
+    name = json.loads((ROOT / "deployment_metadata.json").read_text())[
+        "remote_agent_runtime_id"
+    ]
     location = name.split("/")[3]
-    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
     response = AuthorizedSession(credentials).post(
         f"https://{location}-aiplatform.googleapis.com/v1/{name}:query",
-        json={"class_method": "async_get_session", "input": {"user_id": user, "session_id": session_id}},
+        json={
+            "class_method": "async_get_session",
+            "input": {"user_id": user, "session_id": session_id},
+        },
         timeout=60,
     )
     response.raise_for_status()
@@ -44,17 +51,20 @@ def fetch_session(session_id: str, user: str) -> dict[str, Any]:
 
 def last_turn(session: dict[str, Any]) -> tuple[str, list[str], str]:
     """The last user message, the tools the agent called after it, and its final answer."""
-    prompt, calls, answer = "", [], ""
+    prompt, answer = "", ""
+    calls: list[str] = []
     for event in session.get("events", []):
         parts = (event.get("content") or {}).get("parts") or []
         if event.get("author") == "user":
             texts = [p["text"] for p in parts if p.get("text")]
             if texts:
-                prompt, calls, answer = " ".join(texts), [], ""
+                prompt, calls, answer = " ".join(texts), [], ""  # a new user turn
             continue
         for part in parts:
             if call := part.get("function_call"):
-                calls.append(f"{event.get('author')}: {call['name']}({json.dumps(call.get('args') or {}, ensure_ascii=False)})")
+                calls.append(
+                    f"{event.get('author')}: {call['name']}({json.dumps(call.get('args') or {}, ensure_ascii=False)})"
+                )
             if part.get("text") and not part.get("thought"):
                 answer = part["text"]
     return prompt, calls, answer
@@ -72,11 +82,19 @@ def yaml_case(case_id: str, session_id: str, prompt: str) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Append a production session to evals/cases.yaml.")
+    parser = argparse.ArgumentParser(
+        description="Append a production session to evals/cases.yaml."
+    )
     parser.add_argument("session_id")
-    parser.add_argument("--user", default="cli-user", help="user id of the session (default: cli-user)")
-    parser.add_argument("--id", dest="case_id", required=True, help="id for the new eval case")
-    parser.add_argument("--dry-run", action="store_true", help="print the case instead of appending it")
+    parser.add_argument(
+        "--user", default="cli-user", help="user id of the session (default: cli-user)"
+    )
+    parser.add_argument(
+        "--id", dest="case_id", required=True, help="id for the new eval case"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="print the case instead of appending it"
+    )
     args = parser.parse_args()
 
     prompt, calls, answer = last_turn(fetch_session(args.session_id, args.user))
@@ -94,10 +112,15 @@ def main() -> int:
     text = CASES.read_text(encoding="utf-8")
     marker = "\nhandbook:\n"
     if marker not in text:
-        print("evals/cases.yaml has no `handbook:` section to insert before.", file=sys.stderr)
+        print(
+            "evals/cases.yaml has no `handbook:` section to insert before.",
+            file=sys.stderr,
+        )
         return 1
     CASES.write_text(text.replace(marker, f"\n{case}{marker}", 1), encoding="utf-8")
-    print(f"Added case {args.case_id!r} to the behaviour suite in evals/cases.yaml. Edit its TODO lines, then:")
+    print(
+        f"Added case {args.case_id!r} to the behaviour suite in evals/cases.yaml. Edit its TODO lines, then:"
+    )
     print("  uv run python evals/build_datasets.py && ./scripts/eval.sh behaviour")
     return 0
 

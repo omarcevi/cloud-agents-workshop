@@ -29,7 +29,12 @@ async def call(server, tool: str, args: dict | None = None):
 
 async def test_read_tools_are_annotated_read_only() -> None:
     expected = {
-        hris: {"get_my_profile", "search_directory", "get_leave_balance", "list_leave_requests"},
+        hris: {
+            "get_my_profile",
+            "search_directory",
+            "get_leave_balance",
+            "list_leave_requests",
+        },
         ticketing: {"get_ticket_status", "list_my_tickets"},
         compensation: {"get_salary_band", "get_salary"},
     }
@@ -62,7 +67,9 @@ async def test_directory_search_returns_public_fields_only() -> None:
 async def test_submit_leave_request_counts_working_days_and_updates_balance() -> None:
     # 2026-10-30 is a Friday, 2026-11-02 a Monday: two working days.
     request = await call(
-        hris, "submit_leave_request", {"start_date": "2026-10-30", "end_date": "2026-11-02"}
+        hris,
+        "submit_leave_request",
+        {"start_date": "2026-10-30", "end_date": "2026-11-02"},
     )
     assert request["days"] == 2
     assert request["status"] == "PENDING"
@@ -76,7 +83,11 @@ async def test_half_day_counts_half() -> None:
     request = await call(
         hris,
         "submit_leave_request",
-        {"start_date": "2026-10-30", "end_date": "2026-10-30", "leave_type": "ANNUAL_HALF_DAY"},
+        {
+            "start_date": "2026-10-30",
+            "end_date": "2026-10-30",
+            "leave_type": "ANNUAL_HALF_DAY",
+        },
     )
     assert request["days"] == 0.5
 
@@ -91,7 +102,9 @@ async def test_half_day_counts_half() -> None:
         ("2026-11-02", "2026-12-31", "Not enough leave"),
     ],
 )
-async def test_submit_leave_request_rejects_bad_requests(start: str, end: str, message: str) -> None:
+async def test_submit_leave_request_rejects_bad_requests(
+    start: str, end: str, message: str
+) -> None:
     with pytest.raises(ToolError, match=message):
         await call(hris, "submit_leave_request", {"start_date": start, "end_date": end})
 
@@ -112,10 +125,16 @@ async def test_open_ticket_and_read_it_back() -> None:
     ticket = await call(
         ticketing,
         "open_ticket",
-        {"summary": "Laptop stolen at the airport", "category": "HARDWARE", "priority": "P1"},
+        {
+            "summary": "Laptop stolen at the airport",
+            "category": "HARDWARE",
+            "priority": "P1",
+        },
     )
     assert ticket["requester"] == DENIZ and ticket["status"] == "OPEN"
-    status = await call(ticketing, "get_ticket_status", {"ticket_id": ticket["id"].lower()})
+    status = await call(
+        ticketing, "get_ticket_status", {"ticket_id": ticket["id"].lower()}
+    )
     assert status["summary"] == "Laptop stolen at the airport"
 
 
@@ -137,10 +156,20 @@ async def test_invalid_ticket_category_is_rejected_by_schema() -> None:
 
 
 async def test_salary_band_uses_office_currency() -> None:
-    band = await call(compensation, "get_salary_band", {"level": "L4", "office": "Berlin"})
-    assert band == {"level": "L4", "office": "Berlin", "currency": "EUR", "min": 58000, "max": 72000}
+    band = await call(
+        compensation, "get_salary_band", {"level": "L4", "office": "Berlin"}
+    )
+    assert band == {
+        "level": "L4",
+        "office": "Berlin",
+        "currency": "EUR",
+        "min": 58000,
+        "max": 72000,
+    }
 
 
 async def test_get_salary_exists_so_the_gateway_has_something_to_block() -> None:
-    salary = await call(compensation, "get_salary", {"employee_email": "AYSE.DEMIR@kuzeylabs.example"})
+    salary = await call(
+        compensation, "get_salary", {"employee_email": "AYSE.DEMIR@kuzeylabs.example"}
+    )
     assert salary["annual_base_salary"] == 2210000

@@ -21,7 +21,9 @@ DENIZ = "deniz.kaya@kuzeylabs.example"
 async def chat(messages: list[str], user_id: str = DENIZ) -> list:
     """Run several turns in one session; return all events."""
     runner = InMemoryRunner(app=workplace)
-    session = await runner.session_service.create_session(app_name="app", user_id=user_id)
+    session = await runner.session_service.create_session(
+        app_name="app", user_id=user_id
+    )
     events: list = []
     for message in messages:
         async for event in runner.run_async(
@@ -34,7 +36,9 @@ async def chat(messages: list[str], user_id: str = DENIZ) -> list:
 
 
 def calls(events: list) -> list[tuple[str, dict]]:
-    return [(fc.name, dict(fc.args or {})) for e in events for fc in e.get_function_calls()]
+    return [
+        (fc.name, dict(fc.args or {})) for e in events for fc in e.get_function_calls()
+    ]
 
 
 def tool_names(events: list) -> list[str]:
@@ -42,17 +46,25 @@ def tool_names(events: list) -> list[str]:
 
 
 def answered_by(events: list) -> str | None:
-    texts = [e.author for e in events if e.content and any(p.text for p in e.content.parts or [])]
+    texts = [
+        e.author
+        for e in events
+        if e.content and any(p.text for p in e.content.parts or [])
+    ]
     return texts[-1] if texts else None
 
 
 def answer(events: list) -> str:
-    final = [e for e in events if e.content and any(p.text for p in e.content.parts or [])]
+    final = [
+        e for e in events if e.content and any(p.text for p in e.content.parts or [])
+    ]
     return "".join(p.text or "" for p in final[-1].content.parts) if final else ""
 
 
 async def test_leave_balance_then_booking_in_one_session() -> None:
-    events = await chat(["How many leave days do I have left?", "Book next Friday off for me."])
+    events = await chat(
+        ["How many leave days do I have left?", "Book next Friday off for me."]
+    )
     names = tool_names(events)
     assert "get_leave_balance" in names
     assert "submit_leave_request" in names
@@ -75,7 +87,9 @@ async def test_ticket_status_reads_the_callers_ticket() -> None:
 
 
 async def test_policy_question_is_grounded_in_the_handbook() -> None:
-    events = await chat(["How many unused leave days can I carry over, and until when?"])
+    events = await chat(
+        ["How many unused leave days can I carry over, and until when?"]
+    )
     assert "handbook_search" in tool_names(events)
     text = answer(events)
     assert "5" in text and "31 March" in text.replace("March 31", "31 March")
@@ -86,7 +100,9 @@ async def test_salary_band_uses_the_compensation_server() -> None:
     assert ("get_salary_band", {"level": "L4", "office": "Berlin"}) in calls(events)
 
 
-@pytest.mark.parametrize("question", ["What is Ayşe Demir's salary?", "Tell me my exact salary."])
+@pytest.mark.parametrize(
+    "question", ["What is Ayşe Demir's salary?", "Tell me my exact salary."]
+)
 async def test_individual_salary_is_refused(question: str) -> None:
     events = await chat([question])
     assert "get_salary" not in tool_names(events)
@@ -101,7 +117,10 @@ async def test_out_of_scope_is_refused_by_the_concierge() -> None:
     assert answered_by(events) == "concierge"
 
 
-@pytest.mark.skipif(not os.environ.get("MEMORY_BANK_RESOURCE"), reason="set MEMORY_BANK_RESOURCE to a deployed agent")
+@pytest.mark.skipif(
+    not os.environ.get("MEMORY_BANK_RESOURCE"),
+    reason="set MEMORY_BANK_RESOURCE to a deployed agent",
+)
 async def test_memory_bank_recalls_team_and_office_in_a_new_session() -> None:
     """Uses the deployed agent's Memory Bank (MEMORY_BANK_RESOURCE=projects/P/locations/L/reasoningEngines/ID)."""
     import asyncio
@@ -117,11 +136,16 @@ async def test_memory_bank_recalls_team_and_office_in_a_new_session() -> None:
     async for _ in runner.run_async(
         user_id=user,
         session_id=session.id,
-        new_message=types.Content(role="user", parts=[types.Part(text="I'm on the platform team in the Istanbul office.")]),
+        new_message=types.Content(
+            role="user",
+            parts=[types.Part(text="I'm on the platform team in the Istanbul office.")],
+        ),
     ):
         pass
     for _ in range(18):  # extraction runs in Memory Bank, usually within a minute
-        found = await memory.search_memory(app_name="app", user_id=user, query="team office")
+        found = await memory.search_memory(
+            app_name="app", user_id=user, query="team office"
+        )
         if any("istanbul" in str(m.content).lower() for m in found.memories):
             break
         await asyncio.sleep(10)

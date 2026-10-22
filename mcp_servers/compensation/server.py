@@ -17,7 +17,10 @@ from mcp_servers.common import audit, caller_email, create_server, load_seed, se
 
 SERVER = "compensation"
 READ_ONLY = ToolAnnotations(
-    readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+    read_only_hint=True,
+    destructive_hint=False,
+    idempotent_hint=True,
+    open_world_hint=False,
 )
 
 Level = Literal["L3", "L4", "L5", "L6", "L7"]
@@ -38,7 +41,13 @@ def get_salary_band(level: Level, office: Office = "Istanbul") -> dict[str, Any]
     currency = _data["currency_by_office"][office]
     low, high = _data["bands"][level][currency]
     audit(SERVER, "get_salary_band", email, "ok", level=level, office=office)
-    return {"level": level, "office": office, "currency": currency, "min": low, "max": high}
+    return {
+        "level": level,
+        "office": office,
+        "currency": currency,
+        "min": low,
+        "max": high,
+    }
 
 
 @mcp.tool(annotations=READ_ONLY)

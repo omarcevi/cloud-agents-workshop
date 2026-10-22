@@ -28,7 +28,9 @@ def engine_name() -> str:
     meta = json.loads((ROOT / "deployment_metadata.json").read_text())
     name = meta.get("remote_agent_runtime_id")
     if not name:
-        sys.exit("No deployed agent in deployment_metadata.json. Run `agents-cli deploy` first.")
+        sys.exit(
+            "No deployed agent in deployment_metadata.json. Run `agents-cli deploy` first."
+        )
     return str(name)
 
 
@@ -41,12 +43,29 @@ def summarize(events: list[dict[str, Any]]) -> dict[str, Any]:
             authors.append(author)
         for part in (event.get("content") or {}).get("parts") or []:
             if fc := part.get("function_call"):
-                calls.append({"agent": author, "name": fc.get("name"), "args": fc.get("args") or {}})
+                calls.append(
+                    {
+                        "agent": author,
+                        "name": fc.get("name"),
+                        "args": fc.get("args") or {},
+                    }
+                )
             if fr := part.get("function_response"):
-                results.append({"agent": author, "name": fr.get("name"), "response": fr.get("response")})
+                results.append(
+                    {
+                        "agent": author,
+                        "name": fr.get("name"),
+                        "response": fr.get("response"),
+                    }
+                )
             if part.get("text") and not part.get("thought"):
                 answer.append(part["text"])
-    return {"authors": authors, "tool_calls": calls, "tool_results": results, "answer": "".join(answer)}
+    return {
+        "authors": authors,
+        "tool_calls": calls,
+        "tool_results": results,
+        "answer": "".join(answer),
+    }
 
 
 def ask(message: str, user: str, session_id: str | None) -> dict[str, Any]:
@@ -54,7 +73,9 @@ def ask(message: str, user: str, session_id: str | None) -> dict[str, Any]:
     name = engine_name()
     location = name.split("/")[3]
     base = f"https://{location}-aiplatform.googleapis.com/v1/{name}"
-    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
     http = AuthorizedSession(credentials)
     if not session_id:
         response = http.post(
@@ -75,17 +96,21 @@ def ask(message: str, user: str, session_id: str | None) -> dict[str, Any]:
     )
     response.raise_for_status()
     events = []
-    for line in response.iter_lines(decode_unicode=True):
-        line = line.removeprefix("data:").strip() if line else ""
+    for raw in response.iter_lines():
+        line = raw.decode("utf-8").removeprefix("data:").strip() if raw else ""
         if line.startswith("{"):
             events.append(json.loads(line))
     return {"user": user, "session_id": session_id, **summarize(events)}
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Ask the deployed Workplace Assistant.")
+    parser = argparse.ArgumentParser(
+        description="Ask the deployed Workplace Assistant."
+    )
     parser.add_argument("message")
-    parser.add_argument("--user", default="cli-user", help="ADK user id (default: cli-user)")
+    parser.add_argument(
+        "--user", default="cli-user", help="ADK user id (default: cli-user)"
+    )
     parser.add_argument("--session", help="Resume this session id")
     parser.add_argument("--json", action="store_true", help="Print JSON")
     args = parser.parse_args()
@@ -94,8 +119,12 @@ def main() -> int:
         print(json.dumps(result, ensure_ascii=False))
         return 0
     for call in result["tool_calls"]:
-        print(f"  [{call['agent']}] {call['name']}({json.dumps(call['args'], ensure_ascii=False)})")
-    print(f"\n{result['answer']}\n\nsession: {result['session_id']}  user: {result['user']}")
+        print(
+            f"  [{call['agent']}] {call['name']}({json.dumps(call['args'], ensure_ascii=False)})"
+        )
+    print(
+        f"\n{result['answer']}\n\nsession: {result['session_id']}  user: {result['user']}"
+    )
     return 0
 
 
