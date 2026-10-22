@@ -61,6 +61,10 @@ this tutorial open the project you selected here.
 - **Agent Gateway:** it starts building in the background now and takes about 6 minutes;
   you use it in step 4.
 
+![What setup.sh creates](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-1-setup.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-1-setup.svg)
+
 ### Run it
 
 Cloud Shell has an older agents-cli in `/usr/local/bin`. Install 1.11 or later and put it
@@ -118,6 +122,10 @@ and the `Dockerfile`), builds a container and creates an **Agent Runtime** insta
 - **Access:** `grant_agent_access.sh` gives that identity *Cloud Run Invoker* on each MCP
   server. The agent calls the HRIS as itself, and Cloud Run checks the permission on every
   request.
+
+![What agents-cli deploy does](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-2-deploy.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-2-deploy.svg)
 
 ### Run it
 
@@ -177,6 +185,10 @@ conversations:
 
 Tell it something on Monday and it still knows on Friday.
 
+![Sessions and Memory Bank across a week](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-3-remember.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-3-remember.svg)
+
 ### Run it
 
 Tell the agent something about yourself:
@@ -234,6 +246,10 @@ The policy in
 allows the HRIS and ticketing servers and denies the compensation system. The agent's code
 still calls the compensation tool; the policy stops it. In a company, the security team
 owns this policy and agent teams register their tools.
+
+![Agent Identity and the checks Agent Gateway runs](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-4-secure.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-4-secure.svg)
 
 ### Run it
 
@@ -307,6 +323,10 @@ Agent Runtime exports **OpenTelemetry** data without extra code:
 
 `observe.sh` puts these on one dashboard.
 
+![One leave request as a trace, and where telemetry lands](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-5-observe.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-5-observe.svg)
+
 ### Run it
 
 Make one leave request:
@@ -363,6 +383,10 @@ Three ways to tell whether the agent is good:
   limited capacity in low-spend projects.
 
 Every production failure becomes a new eval case.
+
+![The evaluation loop](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-6-evaluate.svg)
+
+[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-6-evaluate.svg)
 
 ### Run it
 
