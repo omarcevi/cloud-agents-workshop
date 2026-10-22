@@ -56,8 +56,11 @@ check_1() {
                   telemetry.googleapis.com cloudtrace.googleapis.com; do
     if grep -qx "${api_name}" <<< "${enabled}"; then pass "${api_name}"; else miss "${api_name} is not enabled"; fi
   done
+  # Cloud Shell's gcloud can't mint ID tokens for your user ("No identity token can be
+  # obtained"); then only the anonymous 403 is checked here, and step 2 proves the agent
+  # gets through.
   local token
-  token="$(gcloud auth print-identity-token)"
+  token="$(gcloud auth print-identity-token 2>/dev/null || true)"
   for server in "${MCP_SERVERS[@]}"; do
     local name url ready code_anon code_auth
     name="$(mcp_service_name "${server}")"
@@ -65,10 +68,15 @@ check_1() {
     [[ -n "${url}" ]] || { miss "${name} is not deployed"; continue; }
     ready="$(gcloud run services describe "${name}" --region "${REGION}" --project "${PROJECT_ID}" \
                --format='value(status.conditions[0].status)')"
-    code_auth="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${token}" "${url}/health")"
+    code_auth="skipped"
+    if [[ -n "${token}" ]]; then
+      code_auth="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${token}" "${url}/health")"
+    fi
     code_anon="$(curl -s -o /dev/null -w '%{http_code}' "${url}/health")"
     if [[ "${ready}" == "True" && "${code_auth}" == 200 && "${code_anon}" == 403 ]]; then
       pass "${name} ready, /health 200 with a token, 403 without"
+    elif [[ "${ready}" == "True" && "${code_auth}" == skipped && "${code_anon}" == 403 ]]; then
+      pass "${name} ready, 403 without a token (IAM-only)"
     else
       miss "${name}: ready=${ready}, with token=${code_auth}, without=${code_anon} (want True/200/403)"
     fi
