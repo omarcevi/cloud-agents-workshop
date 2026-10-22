@@ -49,7 +49,9 @@ recorded monitor results). Clean up with `./scripts/teardown.sh`.
 ```bash
 git clone https://github.com/omarcevi/cloud-agents-workshop.git && cd cloud-agents-workshop
 gcloud config set project YOUR_PROJECT_ID
-uv tool install google-agents-cli          # Cloud Shell has uv; agents-cli 1.11 or later
+uv tool install --force "google-agents-cli>=1.11"
+export PATH="$HOME/.local/bin:$PATH"       # Cloud Shell has an older agents-cli in /usr/local/bin
+./scripts/check.sh 0
 ./scripts/setup.sh && ./scripts/check.sh 1
 ```
 

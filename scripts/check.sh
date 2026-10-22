@@ -22,6 +22,19 @@ check_0() {
   for tool in gcloud uv agents-cli python3 curl; do
     if command -v "${tool}" >/dev/null; then pass "${tool} found"; else miss "${tool} not found (see the overview page)"; fi
   done
+  # Cloud Shell ships an older agents-cli in /usr/local/bin, ahead of uv's ~/.local/bin.
+  local cli_version
+  cli_version="$(agents-cli --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+  if [[ -n "${cli_version}" && "$(printf '%s\n' 1.11.0 "${cli_version}" | sort -V | head -1)" == 1.11.0 ]]; then
+    pass "agents-cli ${cli_version}"
+  else
+    miss "agents-cli ${cli_version:-?} is older than 1.11 ($(command -v agents-cli)): uv tool install --force 'google-agents-cli>=1.11' && export PATH=\"\$HOME/.local/bin:\$PATH\""
+  fi
+  if gcloud network-services agent-gateways --help >/dev/null 2>&1 && gcloud agent-registry --help >/dev/null 2>&1; then
+    pass "gcloud has agent-registry and agent-gateways"
+  else
+    miss "gcloud is too old for Agent Registry and Agent Gateway: gcloud components update"
+  fi
   local account billing
   account="$(gcloud config get-value account 2>/dev/null || true)"
   if [[ -n "${account}" ]]; then pass "logged in as ${account}"; else miss "not logged in: gcloud auth login"; fi
