@@ -36,3 +36,10 @@ def test_checkpoint_branches_it_names_are_generated() -> None:
     generator = (ROOT / "scripts" / "dev" / "make_checkpoints.sh").read_text()
     for branch in set(re.findall(r"git checkout (step-\d-[a-z]+)", TUTORIAL)):
         assert branch in generator, branch
+
+
+def test_console_links_open_the_participants_project() -> None:
+    links = re.findall(r"\((https://console\.cloud\.google\.com/[^)\s]+)\)", TUTORIAL)
+    assert len(links) >= 10
+    for link in links:
+        assert link.endswith("?project=<walkthrough-project-id/>"), link
