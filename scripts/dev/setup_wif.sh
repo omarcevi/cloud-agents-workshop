@@ -4,9 +4,11 @@
 #
 # Creates a deployer service account with roles/owner on the project (the lab grants IAM
 # roles and binds access policies, so it needs broad rights: use a dedicated test project),
-# a workload identity pool and a GitHub OIDC provider that only accepts tokens from
-# REPO, and lets that repository impersonate the service account. Prints the three
-# repository variables; with --github it also sets them with the gh CLI.
+# a workload identity pool and a GitHub OIDC provider that only accepts tokens from the
+# E2E workflow (.github/workflows/e2e.yml) running on main of REPO, and lets that
+# repository impersonate the service account. Prints the three repository variables;
+# with --github it also sets them with the gh CLI. Also create a GitHub environment named
+# "e2e" with required reviewers (Settings → Environments): the workflow runs in it.
 #
 # Usage: scripts/dev/setup_wif.sh PROJECT_ID [owner/repo] [--github]
 set -euo pipefail
@@ -36,8 +38,8 @@ gcloud iam workload-identity-pools providers describe "${PROVIDER}" --workload-i
   || gcloud iam workload-identity-pools providers create-oidc "${PROVIDER}" \
        --workload-identity-pool "${POOL}" --location global --project "${PROJECT_ID}" \
        --issuer-uri https://token.actions.githubusercontent.com \
-       --attribute-mapping "google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
-       --attribute-condition "assertion.repository == '${REPO}'"
+       --attribute-mapping "google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref,attribute.workflow_ref=assertion.workflow_ref" \
+       --attribute-condition "assertion.repository == '${REPO}' && assertion.ref == 'refs/heads/main' && assertion.workflow_ref == '${REPO}/.github/workflows/e2e.yml@refs/heads/main'"
 
 gcloud iam service-accounts add-iam-policy-binding "${SA}" --project "${PROJECT_ID}" \
   --role roles/iam.workloadIdentityUser --quiet >/dev/null \

@@ -27,6 +27,10 @@ concurrency:
 
 jobs:
   lab:
+    # Only main, and only after approval in the protected "e2e" environment: the job can
+    # act as an Owner of the test project.
+    if: github.ref == 'refs/heads/main'
+    environment: e2e
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
