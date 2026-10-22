@@ -93,7 +93,7 @@ names, logs in one place, and covers every destination.
 
 ## Demo moment 2: step 5, one turn as a trace
 
-1. Ask `Book next Monday off as a half day.` while the Trace Explorer tab is open.
+1. Ask `Book next Monday off as a half day and tell me how many leave days I have left.` while the Trace Explorer tab is open.
 2. "A minute later, the whole turn is here." Open the newest trace and read it top down:
    `invoke_workflow` → `invoke_agent concierge` → `invoke_agent leave_agent` →
    `generate_content` → `execute_tool get_my_profile` → `execute_tool submit_leave_request`.

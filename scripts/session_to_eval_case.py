@@ -36,7 +36,10 @@ def fetch_session(session_id: str, user: str) -> dict[str, Any]:
     credentials, _ = google.auth.default(
         scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
-    response = AuthorizedSession(credentials).post(
+    http = AuthorizedSession(credentials)
+    # Bill the API call to the lab project: Cloud Shell's credentials carry no quota project.
+    http.headers["x-goog-user-project"] = name.split("/")[1]
+    response = http.post(
         f"https://{location}-aiplatform.googleapis.com/v1/{name}:query",
         json={
             "class_method": "async_get_session",

@@ -59,7 +59,10 @@ def _session() -> Any:
     credentials, _ = google.auth.default(
         scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
-    return AuthorizedSession(credentials)
+    http = AuthorizedSession(credentials)
+    # Bill the API call to the lab project: Cloud Shell's credentials carry no quota project.
+    http.headers["x-goog-user-project"] = engine_name().split("/")[1]
+    return http
 
 
 def recent_sessions(http: Any, engine: str, since: datetime) -> list[dict[str, Any]]:

@@ -59,7 +59,7 @@ def list_memories(name: str, user: str) -> int:
     )
     if not found:
         print(
-            f"No memories yet for user {user!r}. Generation takes a few seconds after a turn."
+            f"No memories yet for user {user!r}. Memories appear about a minute after the turn; try again."
         )
         return 1
     for item in found:

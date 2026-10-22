@@ -33,6 +33,8 @@ def find_trace(project: str, trace_filter: str, minutes: int) -> dict[str, Any] 
         scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     http = AuthorizedSession(credentials)
+    # Bill the API call to the lab project: Cloud Shell's credentials carry no quota project.
+    http.headers["x-goog-user-project"] = project
     base = f"https://cloudtrace.googleapis.com/v1/projects/{project}/traces"
     since = dt.datetime.now(dt.UTC) - dt.timedelta(minutes=minutes)
     response = http.get(

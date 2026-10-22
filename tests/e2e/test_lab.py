@@ -124,7 +124,7 @@ def test_step4_secure() -> None:
 @timed("step5_observe")
 def test_step5_observe() -> None:
     run(
-        f'agents-cli run --url {AGENT_URL} --mode adk "Book next Monday off as a half day."'
+        f'agents-cli run --url {AGENT_URL} --mode adk "Book next Monday off as a half day and tell me how many leave days I have left."'
     )
     run("./scripts/observe.sh", check=False)
     eventually("./scripts/check.sh 5", attempts=3, wait=60)

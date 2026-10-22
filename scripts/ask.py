@@ -77,6 +77,8 @@ def ask(message: str, user: str, session_id: str | None) -> dict[str, Any]:
         scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
     http = AuthorizedSession(credentials)
+    # Bill the API call to the lab project: Cloud Shell's credentials carry no quota project.
+    http.headers["x-goog-user-project"] = name.split("/")[1]
     if not session_id:
         response = http.post(
             f"{base}:query",
