@@ -24,6 +24,7 @@ agent packaged for Agent Runtime.
 
 import inspect
 import json
+import os
 
 from agentplatform.frameworks.adk import AdkApp
 from fastapi import FastAPI, HTTPException, Request, encoders, responses
@@ -57,7 +58,13 @@ def attach_reasoning_engine_routes(app: FastAPI) -> None:
                 memory_service_builder=services.get_memory_service,
                 instrumentor_builder=_no_op_instrumentor_builder,
             )
+            # AdkApp.set_up() forces ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=false unless
+            # enable_tracing=True. Keep the deployed value: online monitors read the
+            # agent's instructions from the call_llm spans.
+            capture_in_spans = os.environ.get("ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS")
             runtime.set_up()
+            if capture_in_spans is not None:
+                os.environ["ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS"] = capture_in_spans
             operations = runtime.register_operations()
             streaming_methods = set(operations.get("stream", [])) | set(
                 operations.get("async_stream", [])

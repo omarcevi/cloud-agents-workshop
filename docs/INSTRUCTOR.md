@@ -114,7 +114,8 @@ yours (created the day before). `fallback_step6.sh` prints pre-recorded results 
 
 Two prerequisites, both handled by the scripts: the monitor needs prompt and answer
 content in telemetry (`.env` sets the three variables; without
-`ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true` every trace fails with `INSUFFICIENT_DATA`),
+`ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true`, kept by the reasoning-engine adapter because
+`AdkApp.set_up()` resets it, every trace fails with `INSUFFICIENT_DATA`),
 and the Agent Platform service agent needs `roles/observability.viewAccessor`
 (`monitor.sh` grants it). Monitor errors are in Cloud Logging under
 `logName:"aiplatform.googleapis.com%2Fonline_evaluator"`.
