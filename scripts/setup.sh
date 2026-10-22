@@ -3,7 +3,7 @@
 # Safe to re-run: every phase checks what already exists.
 #
 # Usage: ./scripts/setup.sh [--only PHASE[,PHASE...]]
-#   phases: apis repo image services env
+#   phases: apis repo image services registry metrics gateway env
 source "$(dirname "$0")/lib/common.sh"
 
 ONLY=""
@@ -30,6 +30,7 @@ APIS=(
   iam.googleapis.com
   iamcredentials.googleapis.com
   serviceusage.googleapis.com
+  compute.googleapis.com               # required by Agent Gateway
 )
 
 phase_apis() {
@@ -65,7 +66,8 @@ phase_image() {
     ok "already built"
   else
     (cd "${REPO_ROOT}" && gcloud builds submit . --config mcp_servers/cloudbuild.yaml \
-       --substitutions "_IMAGE=${MCP_IMAGE}" --region "${REGION}" --project "${PROJECT_ID}" --quiet \
+       --substitutions "_IMAGE=${MCP_IMAGE}" --region "${REGION}" --project "${PROJECT_ID}" \
+       --gcs-source-staging-dir "gs://${PROJECT_ID}_cloudbuild/workshop-source" --quiet \
        > "${REPO_ROOT}/.setup-build.log" 2>&1) \
       || die "Image build failed. See .setup-build.log"
     ok "built with Cloud Build"
@@ -105,6 +107,93 @@ phase_services() {
   done
 }
 
+# Agent Registry: the three MCP servers (with their tool specs) and one composite
+# endpoint for the Google APIs the agent itself calls. Agent Gateway only lets agents
+# reach registered destinations that a policy allows.
+register() {  # register NAME DISPLAY ARGS...   (re-runs refresh the interface URLs only)
+  local name="$1" display="$2"; shift 2
+  if gcloud agent-registry services describe "${name}" --location "${REGION}" --project "${PROJECT_ID}" >/dev/null 2>&1; then
+    local interfaces=() args=("$@") i
+    for ((i = 0; i < ${#args[@]}; i++)); do
+      if [[ "${args[$i]}" == --interfaces ]]; then interfaces+=(--interfaces "${args[$((i + 1))]}"); fi
+    done
+    gcloud agent-registry services update "${name}" --location "${REGION}" --project "${PROJECT_ID}" \
+      --quiet "${interfaces[@]}" >/dev/null 2>&1
+    ok "${display} (refreshed)"
+  else
+    gcloud agent-registry services create "${name}" --location "${REGION}" --project "${PROJECT_ID}" \
+      --display-name "${display}" --quiet "$@" >/dev/null 2>&1
+    ok "${display}"
+  fi
+}
+
+phase_registry() {
+  log "Registering MCP servers and Google APIs in Agent Registry"
+  local server url
+  for server in "${MCP_SERVERS[@]}"; do
+    url="$(gcloud run services describe "$(mcp_service_name "${server}")" --region "${REGION}" \
+            --project "${PROJECT_ID}" --format 'value(status.url)')"
+    register "$(mcp_service_name "${server}")" "Kuzey ${server} MCP" \
+      --mcp-server-spec-type tool-spec \
+      --mcp-server-spec-content "$(cat "${REPO_ROOT}/infra/gateway/toolspecs/${server}.json")" \
+      --interfaces "url=${url}/mcp,protocolBinding=jsonrpc"
+  done
+  local args=() line
+  while read -r line; do
+    [[ -z "${line}" || "${line}" == \#* ]] && continue
+    args+=(--interfaces "protocolBinding=jsonrpc,url=${line//REGION/${REGION}}")
+  done < "${REPO_ROOT}/infra/gateway/platform-endpoints.txt"
+  register google-apis "Google APIs used by the agent" --endpoint-spec-type no-spec "${args[@]}"
+}
+
+phase_metrics() {
+  log "Logs-based metrics (they only count entries written after they exist)"
+  local file name
+  for file in "${REPO_ROOT}"/infra/monitoring/log-metrics/*.json; do
+    name="$(basename "${file}" .json)"
+    if gcloud logging metrics describe "${name}" --project "${PROJECT_ID}" >/dev/null 2>&1; then
+      ok "${name} (exists)"
+    else
+      gcloud logging metrics create "${name}" --config-from-file "${file}" --project "${PROJECT_ID}" >/dev/null
+      ok "${name}"
+    fi
+  done
+}
+
+# Creating the gateway and its IAP authorization policy takes about 6 minutes, so it runs in
+# the background (log: .setup-gateway.log) and is ready long before step 4.
+gateway_job() {
+  set -euo pipefail
+  local gw_file="${REPO_ROOT}/.setup-gateway.yaml" pol_file="${REPO_ROOT}/.setup-iap-policy.yaml"
+  sed -e "s/PROJECT_ID/${PROJECT_ID}/g" -e "s/REGION/${REGION}/g" "${REPO_ROOT}/infra/gateway/gateway.yaml" > "${gw_file}"
+  sed -e "s/PROJECT_ID/${PROJECT_ID}/g" -e "s/REGION/${REGION}/g" -e "s/GATEWAY/${GATEWAY_NAME}/g" \
+    "${REPO_ROOT}/infra/gateway/iap-authz-policy.yaml" > "${pol_file}"
+  echo "$(date -u +%T) creating gateway ${GATEWAY_NAME}"
+  gcloud network-services agent-gateways describe "${GATEWAY_NAME}" --location "${REGION}" --project "${PROJECT_ID}" >/dev/null 2>&1 \
+    || gcloud network-services agent-gateways import "${GATEWAY_NAME}" --source "${gw_file}" \
+         --location "${REGION}" --project "${PROJECT_ID}" --quiet
+  echo "$(date -u +%T) IAP authorization extension"
+  gcloud service-extensions authz-extensions import workplace-iap --source "${REPO_ROOT}/infra/gateway/iap-authz-extension.yaml" \
+    --location "${REGION}" --project "${PROJECT_ID}" --quiet
+  echo "$(date -u +%T) IAP authorization policy on the gateway"
+  gcloud network-security authz-policies describe workplace-iap-policy --location "${REGION}" --project "${PROJECT_ID}" >/dev/null 2>&1 \
+    || gcloud network-security authz-policies import workplace-iap-policy --source "${pol_file}" \
+         --location "${REGION}" --project "${PROJECT_ID}" --quiet
+  echo "$(date -u +%T) GATEWAY READY"
+}
+
+phase_gateway() {
+  log "Agent Gateway ${GATEWAY_NAME} (background, about 6 minutes)"
+  if gcloud network-security authz-policies describe workplace-iap-policy --location "${REGION}" \
+       --project "${PROJECT_ID}" >/dev/null 2>&1; then
+    ok "already set up"
+    return
+  fi
+  (gateway_job > "${REPO_ROOT}/.setup-gateway.log" 2>&1 || echo "$(date -u +%T) GATEWAY FAILED" >> "${REPO_ROOT}/.setup-gateway.log") &
+  disown
+  ok "started; follow it with: tail -f .setup-gateway.log"
+}
+
 # .env is read by the agent locally and shipped by `agents-cli deploy` as env vars.
 phase_env() {
   log "Writing .env for the agent"
@@ -132,6 +221,9 @@ main() {
   want repo && phase_repo
   want image && phase_image
   want services && phase_services
+  want registry && phase_registry
+  want metrics && phase_metrics
+  want gateway && phase_gateway
   want env && phase_env
   log "Setup finished in $((SECONDS - start))s. Next: ./scripts/check.sh 1"
 }

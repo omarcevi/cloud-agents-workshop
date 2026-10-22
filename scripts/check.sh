@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Prove that a lab step worked. Usage: ./scripts/check.sh STEP   (1-6)
+# Prove that a lab step worked. Usage: ./scripts/check.sh STEP   (0-6; 0 = ready to start)
 #   ./scripts/check.sh      checks the step of the checkpoint branch you are on
 source "$(dirname "$0")/lib/common.sh"
 require_project
 
-STEP="${1:-$(cat "${REPO_ROOT}/.checkpoint" 2>/dev/null || echo 1)}"
+STEP="${1:-$(cat "${REPO_ROOT}/.checkpoint" 2>/dev/null || echo 0)}"
 FAILED=0
 pass() { ok "$*"; }
 miss() { fail "$*"; FAILED=1; }
@@ -14,6 +14,24 @@ ask_json() {  # ask_json MESSAGE [USER]
 }
 json_get() {  # json_get JSON PYTHON_EXPR  (the parsed JSON is `d`)
   python3 -c "import json,sys; d=json.loads(sys.argv[1]); print($2)" "$1"
+}
+
+check_0() {
+  log "Step 0: tools, login and project"
+  local tool
+  for tool in gcloud uv agents-cli python3 curl; do
+    if command -v "${tool}" >/dev/null; then pass "${tool} found"; else miss "${tool} not found (see the overview page)"; fi
+  done
+  local account billing
+  account="$(gcloud config get-value account 2>/dev/null || true)"
+  if [[ -n "${account}" ]]; then pass "logged in as ${account}"; else miss "not logged in: gcloud auth login"; fi
+  billing="$(gcloud billing projects describe "${PROJECT_ID}" --format='value(billingEnabled)' 2>/dev/null || true)"
+  if [[ "${billing}" == True ]]; then pass "billing enabled on ${PROJECT_ID}"; else miss "billing not enabled (or not visible) on ${PROJECT_ID}"; fi
+  if gcloud auth application-default print-access-token >/dev/null 2>&1; then
+    pass "application default credentials"
+  else
+    miss "no application default credentials: gcloud auth application-default login"
+  fi
 }
 
 check_1() {
@@ -138,7 +156,7 @@ check_6() {
 }
 
 case "${STEP}" in
-  1|2|3|4|5|6) "check_${STEP}" ;;
-  *) die "Usage: ./scripts/check.sh STEP   (1-6)" ;;
+  0|1|2|3|4|5|6) "check_${STEP}" ;;
+  *) die "Usage: ./scripts/check.sh STEP   (0-6)" ;;
 esac
 if [[ "${FAILED}" == 0 ]]; then log "Step ${STEP} checks passed."; else die "Step ${STEP} is not done yet (see above)."; fi
