@@ -44,6 +44,8 @@ Point Cloud Shell at it:
 gcloud config set project <walkthrough-project-id/>
 ```
 
+&nbsp;
+
 If Cloud Shell asks you to **Authorize** gcloud, click **Authorize**. The console links in
 this tutorial open the project you selected here.
 
@@ -75,17 +77,23 @@ uv tool install --force "google-agents-cli>=1.11"
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+&nbsp;
+
 Check tools, login and billing:
 
 ```bash
 ./scripts/check.sh 0
 ```
 
+&nbsp;
+
 Set up (about 2 minutes):
 
 ```bash
 ./scripts/setup.sh
 ```
+
+&nbsp;
 
 While it runs, read what it does:
 <walkthrough-editor-open-file filePath="scripts/setup.sh">scripts/setup.sh</walkthrough-editor-open-file>.
@@ -104,6 +112,8 @@ While it runs, read what it does:
 ```bash
 ./scripts/check.sh 1
 ```
+
+&nbsp;
 
 Troubleshooting: [Step 1 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-1/).
 
@@ -136,11 +146,15 @@ source .workshop.env
 agents-cli deploy --project $PROJECT_ID --agent-identity --no-confirm-project
 ```
 
+&nbsp;
+
 Grant the agent's identity access to the MCP servers, and configure Memory Bank:
 
 ```bash
 ./scripts/grant_agent_access.sh
 ```
+
+&nbsp;
 
 Chat with it. IAM grants take a minute or two to apply: if an answer says a system is
 unavailable, ask again.
@@ -165,6 +179,8 @@ agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 
 ```bash
 ./scripts/check.sh 2
 ```
+
+&nbsp;
 
 Behind? `git checkout step-1-setup` gives you the state after step 1. Troubleshooting:
 [Step 2 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-2/).
@@ -197,11 +213,15 @@ Tell the agent something about yourself:
 agents-cli run --url "$AGENT_URL" --mode adk "Hi! I'm on the platform team in the Istanbul office, and I prefer to take Fridays off."
 ```
 
+&nbsp;
+
 Memory Bank extracts facts in the background, usually within a minute or two:
 
 ```bash
 uv run python scripts/memory_bank.py list
 ```
+
+&nbsp;
 
 Now ask in new sessions. The agent should know your office and remind you about the
 platform team's on-call swap:
@@ -225,6 +245,8 @@ agents-cli run --url "$AGENT_URL" --mode adk "Book next Friday off."
 ```bash
 ./scripts/check.sh 3
 ```
+
+&nbsp;
 
 Troubleshooting: [Step 3 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-3/).
 
@@ -259,11 +281,15 @@ Make sure the gateway finished building:
 tail -1 .setup-gateway.log
 ```
 
+&nbsp;
+
 It should say `GATEWAY READY`. Apply the access policy:
 
 ```bash
 ./scripts/secure.sh
 ```
+
+&nbsp;
 
 Bind the agent to the gateway (a redeploy, about 5 minutes):
 
@@ -273,12 +299,16 @@ agents-cli deploy --project $PROJECT_ID --update-only --agent-identity --no-conf
   --update-env-vars GOOGLE_API_ENABLE_RUNTIME_BOUND_TOKEN=false
 ```
 
+&nbsp;
+
 Same question as in step 2, and a check that HRIS still works:
 
 ```bash
 agents-cli run --url "$AGENT_URL" --mode adk "What is the salary band for an L5 in Istanbul?"
 agents-cli run --url "$AGENT_URL" --mode adk "How many leave days do I have?"
 ```
+
+&nbsp;
 
 The gateway's own record of the denial:
 
@@ -304,6 +334,8 @@ gcloud logging read 'resource.type="networkservices.googleapis.com/Gateway" AND 
 ```bash
 ./scripts/check.sh 4
 ```
+
+&nbsp;
 
 No gateway in your project? `./scripts/fallback_step4.sh` blocks the server with Cloud Run
 IAM instead. Troubleshooting: [Step 4 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-4/).
@@ -335,12 +367,16 @@ Make one leave request:
 agents-cli run --url "$AGENT_URL" --mode adk "Book next Monday off as a half day and tell me how many leave days I have left."
 ```
 
+&nbsp;
+
 Wait a minute for the spans to arrive, then create the dashboard and print the trace as a
 waterfall:
 
 ```bash
 ./scripts/observe.sh
 ```
+
+&nbsp;
 
 Read it like a profile: tool calls take milliseconds, model calls take seconds.
 
@@ -361,6 +397,8 @@ Read it like a profile: tool calls take milliseconds, model calls take seconds.
 ```bash
 ./scripts/check.sh 5
 ```
+
+&nbsp;
 
 Troubleshooting: [Step 5 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-5/).
 
@@ -396,11 +434,15 @@ The eval gate (about 2 minutes):
 ./scripts/eval.sh
 ```
 
+&nbsp;
+
 Score your own conversations (about a minute):
 
 ```bash
 ./scripts/score_live.sh
 ```
+
+&nbsp;
 
 Create the managed Online Monitor:
 
@@ -408,17 +450,23 @@ Create the managed Online Monitor:
 ./scripts/monitor.sh
 ```
 
+&nbsp;
+
 Turn a production conversation into a test case:
 
 ```bash
 uv run python scripts/ask.py "Book 29 October off for me."
 ```
 
+&nbsp;
+
 Copy the `session:` number it prints, then:
 
 ```bash
 uv run python scripts/session_to_eval_case.py SESSION_ID --id my_regression
 ```
+
+&nbsp;
 
 In <walkthrough-editor-open-file filePath="evals/cases.yaml">evals/cases.yaml</walkthrough-editor-open-file>,
 the new case is at the end of the behaviour list. Set
@@ -442,6 +490,8 @@ uv run python evals/build_datasets.py && ./scripts/eval.sh behaviour
 ./scripts/check.sh 6
 ```
 
+&nbsp;
+
 Troubleshooting: [Step 6 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-6/).
 
 ## Clean up
@@ -451,6 +501,8 @@ Delete everything the lab created (about 10 minutes). It lists anything left ove
 ```bash
 ./scripts/teardown.sh
 ```
+
+&nbsp;
 
 Then confirm in the console: no instance under
 [Agent Runtime deployments](https://console.cloud.google.com/agent-platform/runtimes?project=<walkthrough-project-id/>),
