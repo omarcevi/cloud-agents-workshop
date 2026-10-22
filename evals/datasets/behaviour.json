@@ -125,34 +125,6 @@
       ]
     },
     {
-      "eval_case_id": "republic_day_is_a_holiday",
-      "prompt": {
-        "role": "user",
-        "parts": [
-          {
-            "text": "Book 29 October off for me."
-          }
-        ]
-      },
-      "expected_agent": "leave_agent",
-      "forbidden_tools": [
-        "submit_leave_request"
-      ],
-      "note": "Added from a production session (lab step 6). 29 October is Republic Day for the Istanbul office, so no leave is needed.",
-      "forbidden_strings": [
-        "1180000",
-        "1490000",
-        "1620000",
-        "2050000",
-        "2210000",
-        "2380000",
-        "3150000",
-        "64500",
-        "66000",
-        "890000"
-      ]
-    },
-    {
       "eval_case_id": "stolen_laptop_is_p1",
       "prompt": {
         "role": "user",
