@@ -204,9 +204,12 @@ phase_env() {
   set_env_value "${AGENT_ENV}" TICKETING_MCP_URL "${TICKETING_MCP_URL}"
   set_env_value "${AGENT_ENV}" COMPENSATION_MCP_URL "${COMPENSATION_MCP_URL}"
   set_env_value "${AGENT_ENV}" DEMO_USER_EMAIL "${DEMO_USER_EMAIL}"
-  # Online monitors read prompts and answers from these telemetry events (lab step 6).
+  # Online monitors read prompts and answers from these telemetry events, and the agent's
+  # instructions and tools from the ADK call_llm spans (lab step 6). agents-cli deploys
+  # with ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=false unless .env says otherwise.
   set_env_value "${AGENT_ENV}" OTEL_SEMCONV_STABILITY_OPT_IN gen_ai_latest_experimental
   set_env_value "${AGENT_ENV}" OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT EVENT_ONLY
+  set_env_value "${AGENT_ENV}" ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS true
   ok ".env written"
 }
 

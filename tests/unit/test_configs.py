@@ -165,6 +165,17 @@ def test_platform_endpoints_cover_what_the_agent_calls() -> None:
     assert len(lines) <= 50  # interfaces per registry service
 
 
+def test_container_starts_without_network() -> None:
+    # uv run without --no-sync rebuilds the project at start, fetching hatchling from
+    # PyPI, which Agent Gateway blocks: every cold start after the first would fail.
+    cmd = next(
+        line
+        for line in (ROOT / "Dockerfile").read_text().splitlines()
+        if line.startswith("CMD")
+    )
+    assert '"uv", "run", "--no-sync"' in cmd
+
+
 def test_toolspecs_match_the_servers() -> None:
     import importlib.util
 

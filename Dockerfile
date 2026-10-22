@@ -46,4 +46,6 @@ ENV GRPC_DEFAULT_SSL_ROOTS_FILE_PATH=${AGENT_GATEWAY_ROOT_CERTIFICATES:+/etc/ssl
 
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "app.fast_api_app:app", "--host", "0.0.0.0", "--port", "8080"]
+# --no-sync: everything is installed at build time. Without it uv rebuilds the project on
+# every start, which fetches hatchling from PyPI, and Agent Gateway (egress) blocks PyPI.
+CMD ["uv", "run", "--no-sync", "uvicorn", "app.fast_api_app:app", "--host", "0.0.0.0", "--port", "8080"]

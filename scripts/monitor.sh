@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Lab step 6: create an Online Monitor that scores the deployed agent's live traces.
 #
-# Online monitors read prompts and answers from Cloud Trace/Logging telemetry events,
-# which is why setup.sh writes OTEL_SEMCONV_STABILITY_OPT_IN and
-# OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=EVENT_ONLY into .env.
+# Online monitors read prompts and answers from Cloud Trace/Logging telemetry events and
+# the agent's instructions and tools from the ADK call_llm spans, which is why setup.sh
+# writes OTEL_SEMCONV_STABILITY_OPT_IN, OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+# and ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true into .env. Without the last one every trace
+# fails with INSUFFICIENT_DATA "system_instruction not present in any call_llm span".
 # There is no gcloud command for monitors yet, so this calls the REST API (v1beta1).
 # The monitor runs about every 10 minutes; first scores appear after that.
 #
