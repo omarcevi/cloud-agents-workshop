@@ -39,8 +39,11 @@ otel_to_cloud = os.environ.get(
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Serve the ADK dev UI only on a developer machine, never on Agent Runtime.
-serve_dev_ui = not os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ID")
+# Serve the ADK dev UI only on a developer machine, never on Agent Runtime or Cloud Run
+# (K_SERVICE is set by Cloud Run).
+serve_dev_ui = not (
+    os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ID") or os.environ.get("K_SERVICE")
+)
 
 
 def _forward_python_warnings_to_cloud_logging() -> None:
