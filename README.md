@@ -38,11 +38,11 @@ Cloud Run, IAM-only ingress (roles/run.invoker for the agent identity)
 | 3 | Remember | chat in two sessions, `scripts/memory_bank.py list` | Memory Bank has team and office | `step-3-remember` |
 | 4 | Secure | `./scripts/secure.sh`, `agents-cli deploy --agent-gateway-egress …` | compensation denied and logged, HRIS works | `step-4-secure` |
 | 5 | Observe | `./scripts/observe.sh` | trace with a sub-agent span and ≥ 2 tool spans | `step-5-observe` |
-| 6 | Evaluate | `./scripts/eval.sh`, create an Online Monitor | eval passes thresholds, monitor exists | `step-6-evaluate` |
+| 6 | Evaluate | `./scripts/eval.sh`, `./scripts/score_live.sh`, create an Online Monitor | eval passes thresholds, live traffic scored, monitor exists | `step-6-evaluate` |
 
 Fallbacks when a preview feature is not available to you: `./scripts/fallback_step4.sh`
 (Cloud Run IAM instead of Agent Gateway) and `./scripts/fallback_step6.sh` (local eval plus
-recorded monitor results). Clean up with `./scripts/teardown.sh`.
+recorded live-traffic scores). Clean up with `./scripts/teardown.sh`.
 
 ## Quick start (Cloud Shell)
 

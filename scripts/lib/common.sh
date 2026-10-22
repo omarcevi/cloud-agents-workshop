@@ -91,3 +91,39 @@ api() {
   if [[ -n "${body}" ]]; then args+=(-d "${body}"); fi
   curl "${args[@]}" "${url}"
 }
+
+# Start fresh local copies of the three MCP servers on 8081-8083 and point the agent at
+# them (*_MCP_URL). Eval runs use them so they never change the shared Cloud Run data.
+# Stopped by the EXIT trap this sets.
+LOCAL_MCP_PIDS=()
+# shellcheck disable=SC2329  # called by the EXIT trap
+stop_local_mcp_servers() {
+  if [[ ${#LOCAL_MCP_PIDS[@]} -gt 0 ]]; then kill "${LOCAL_MCP_PIDS[@]}" 2>/dev/null || true; fi
+}
+start_local_mcp_servers() {
+  trap stop_local_mcp_servers EXIT
+  log "Starting local MCP servers"
+  local port=8081 server p
+  for server in "${MCP_SERVERS[@]}"; do
+    (cd "${REPO_ROOT}" && HOST=127.0.0.1 PORT="${port}" uv run --quiet python -m "mcp_servers.${server}.server" \
+       > "${REPO_ROOT}/.setup-local-${server}.log" 2>&1) &
+    LOCAL_MCP_PIDS+=($!)
+    export "$(tr '[:lower:]' '[:upper:]' <<< "${server}")_MCP_URL=http://127.0.0.1:${port}"
+    port=$((port + 1))
+  done
+  for p in 8081 8082 8083; do
+    for _ in $(seq 1 50); do curl -sf "http://127.0.0.1:${p}/health" >/dev/null && break; sleep 0.2; done
+    curl -sf "http://127.0.0.1:${p}/health" >/dev/null || die "Local MCP server on port ${p} did not start"
+  done
+  ok "hris :8081, ticketing :8082, compensation :8083"
+}
+
+# Fill PROJECT_ID into an eval config template (judge model names need the project) and
+# print the path of the filled-in copy, which sits next to the template so relative
+# custom_function_file paths still resolve.
+render_eval_config() {
+  local template="$1" rendered
+  rendered="$(dirname "${template}")/.$(basename "${template}" .yaml).${PROJECT_ID}.yaml"
+  sed "s#PROJECT_ID#${PROJECT_ID}#g" "${REPO_ROOT}/${template}" > "${REPO_ROOT}/${rendered}"
+  printf '%s' "${rendered}"
+}

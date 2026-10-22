@@ -156,7 +156,7 @@ check_5() {
 }
 
 check_6() {
-  log "Step 6: eval report passes the thresholds and an online monitor exists"
+  log "Step 6: eval gate passes, live traffic is scored, an online monitor exists"
   local suite
   for suite in behaviour handbook; do
     if [[ -d "${REPO_ROOT}/artifacts/eval/${suite}" ]]; then
@@ -165,12 +165,20 @@ check_6() {
       miss "no ${suite} eval results. Run ./scripts/eval.sh"
     fi
   done
+  local live="${REPO_ROOT}/artifacts/live/summary.json" fallback="${REPO_ROOT}/artifacts/eval/online-monitor-fallback.txt"
+  if [[ -f "${live}" ]] && [[ "$(json_get "$(cat "${live}")" 'sum(m["scored"] for m in d["metrics"].values()) > 0')" == True ]]; then
+    pass "live traffic scored: $(json_get "$(cat "${live}")" '", ".join(k + " " + format(v["mean"], ".2f") for k, v in sorted(d["metrics"].items()) if v["mean"] is not None)')"
+  elif [[ -f "${fallback}" ]]; then
+    pass "live scoring fallback used (scripts/fallback_step6.sh)"
+  else
+    miss "no live scores. Run ./scripts/score_live.sh, or ./scripts/fallback_step6.sh"
+  fi
   local monitors
   monitors="$(api GET "https://${REGION}-aiplatform.googleapis.com/v1beta1/projects/${PROJECT_ID}/locations/${REGION}/onlineEvaluators" \
                 | python3 -c 'import json,sys; print(" ".join(e.get("displayName","") for e in json.load(sys.stdin).get("onlineEvaluators",[])))' 2>/dev/null || true)"
   if [[ -n "${monitors}" ]]; then
     pass "online monitor: ${monitors}"
-  elif [[ -f "${REPO_ROOT}/artifacts/eval/online-monitor-fallback.txt" ]]; then
+  elif [[ -f "${fallback}" ]]; then
     pass "online monitor fallback used (scripts/fallback_step6.sh)"
   else
     miss "no online monitor. Run ./scripts/monitor.sh, or ./scripts/fallback_step6.sh"

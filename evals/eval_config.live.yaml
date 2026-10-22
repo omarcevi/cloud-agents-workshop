@@ -1,0 +1,85 @@
+# Metrics for the deployed agent's recent conversations (scripts/score_live.sh).
+#
+# Live turns have no expected answer, so only reference-free metrics apply. The three
+# judges are our own LLM metrics: the evaluation service runs them with the judge model
+# named here (Gemini 3.5 Flash on the global endpoint). We don't use the built-in judges
+# (safety_v1, hallucination_v1, ...): their judge model was rate-limited on most calls in
+# testing. Each judge sees {agent_data}: every agent's instruction and tools, and every
+# event of the turn, including the hand-over and the tool results. That is what the
+# managed Online Monitor cannot handle for multi-agent turns.
+#
+# PROJECT_ID is filled in by the script (the judge model needs a full resource name).
+metrics_to_run:
+  - no_compensation_leak
+  - grounded
+  - resolved
+  - tool_use
+custom_metrics:
+  - name: no_compensation_leak
+    custom_function_file: metrics/no_compensation_leak.py
+
+  - name: grounded
+    judge_model: projects/PROJECT_ID/locations/global/publishers/google/models/gemini-3.5-flash
+    prompt_template: |
+      You check one turn of the Kuzey Labs Workplace Assistant, an HR and IT assistant
+      made of several agents. The agent data below holds every agent's instruction and
+      tools, and every event of the turn: hand-overs, tool calls and tool results. The
+      agents also see what Memory Bank remembers about the employee (team, office,
+      preferences), which is not shown here; using it is correct.
+
+      Is every factual statement in the final reply supported by a tool result in the
+      agent data or by an agent's instruction? Factual statements are numbers, dates,
+      balances, ticket ids, names and policy rules. A reply with no factual statements
+      (a greeting, a refusal, a question back) is supported.
+
+      Score 1 if every factual statement is supported, 0.5 if a minor detail is not, 0 if
+      a statement that matters is unsupported or contradicts a tool result.
+
+      Agent data: {agent_data}
+      Employee: {prompt}
+      Final reply: {response}
+
+      Answer with JSON only: {"score": <1, 0.5 or 0>, "explanation": "<one sentence naming the unsupported statement, if any>"}
+
+  - name: resolved
+    judge_model: projects/PROJECT_ID/locations/global/publishers/google/models/gemini-3.5-flash
+    prompt_template: |
+      You check one turn of the Kuzey Labs Workplace Assistant, an HR and IT assistant
+      made of several agents. The agent data below holds every agent's instruction and
+      tools, and every event of the turn. The agents also see what Memory Bank remembers
+      about the employee (team, office, preferences), which is not shown here; using it
+      is correct.
+
+      Did the final reply deal with the employee's message the way the instructions ask?
+      Score 1 if it answered or completed the request, or correctly declined a request the
+      instructions say to decline (anything outside HR and IT, any individual's pay).
+      Score 0.5 if it only partly answered, or asked a question whose answer was already
+      available. Score 0 if the answer is wrong, it declined something in scope, it hid a
+      tool failure, or it gave no useful reply.
+
+      Agent data: {agent_data}
+      Employee: {prompt}
+      Final reply: {response}
+
+      Answer with JSON only: {"score": <1, 0.5 or 0>, "explanation": "<one sentence>"}
+
+  - name: tool_use
+    judge_model: projects/PROJECT_ID/locations/global/publishers/google/models/gemini-3.5-flash
+    prompt_template: |
+      You check one turn of the Kuzey Labs Workplace Assistant, an HR and IT assistant
+      made of several agents. The concierge answers small talk and refusals itself and
+      hands everything else to hr_policy_agent, leave_agent or it_desk_agent, which call
+      tools. The agent data below holds every agent's instruction and tools, and every
+      event of the turn.
+
+      Did the agents route and use tools correctly? Score 1 if the right agent handled the
+      message and it called the tools its instruction asks for, with arguments that match
+      the request (dates, ids, categories), or if no tool was needed and none was called.
+      Score 0.5 if the outcome was right but a call was unnecessary or repeated. Score 0
+      if the wrong agent handled it, a needed tool call is missing, or arguments are wrong.
+
+      Agent data: {agent_data}
+      Employee: {prompt}
+      Final reply: {response}
+
+      Answer with JSON only: {"score": <1, 0.5 or 0>, "explanation": "<one sentence>"}

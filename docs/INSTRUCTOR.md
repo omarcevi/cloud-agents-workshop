@@ -105,28 +105,35 @@ names, logs in one place, and covers every destination.
    they have a SIEM or their own OpenTelemetry collector, that changes the setup, not the
    agent."
 
-## Online monitors in a 60-minute session
+## Evaluating live traffic in step 6
 
-The monitor runs about every 10 minutes and scores traces from after its creation, so a
-participant who creates it at 0:45 might see the first scores after the session. Show
-yours (created the day before). `fallback_step6.sh` prints pre-recorded results from
-`evals/recorded/online-monitor-results.json` and marks step 6 as done with the fallback.
+Two ways, and the lab shows both:
 
-What it scores: only turns the concierge answers itself (greetings, refusals,
-out-of-scope requests, salary questions). A turn with a hand-over to a sub-agent is skipped
-as a whole (`INSUFFICIENT_DATA: system_instruction is not uniform across call_llm spans`),
-so the day before, ask your demo agent a few salary and out-of-scope questions as well as
-normal ones. Say this out loud in the session; it is the kind of gap partners need to
-know about. Refresh the fallback's recording with
-`uv run python scripts/dev/record_monitor_results.py`.
+- `./scripts/score_live.sh` is the one that works. It reads the deployed agent's recent
+  conversations from Agent Runtime Sessions, turns every turn (including the ones a
+  sub-agent handled) into an eval case in the `agents-cli eval generate` format, and grades
+  them with `agents-cli eval grade`: the salary-leak check plus three of our own LLM judges
+  (`grounded`, `resolved`, `tool_use` in `evals/eval_config.live.yaml`) on Gemini 3.5 Flash,
+  `global` endpoint. About a minute for 20 turns. In production you run it on a schedule
+  (Cloud Scheduler + a Cloud Run job).
+- Google's managed Online Monitor (`./scripts/monitor.sh`) is created and explained, but
+  don't promise scores from it. In rehearsals it (1) skipped every turn with a hand-over
+  to a sub-agent (`INSUFFICIENT_DATA: system_instruction is not uniform across call_llm
+  spans`), and (2) lost most of its grading calls to `429 Judge model resource exhausted`.
+  Its judge is Gemini 2.5 Flash/Pro on the regional endpoint, on shared pay-as-you-go
+  capacity, prioritized by the organization's 30-day spend; new and low-spend projects
+  are at the bottom. Say both out loud: partners need to know before they promise a
+  customer managed online evaluation.
 
-Two prerequisites, both handled by the scripts: the monitor needs prompt and answer
-content in telemetry (`.env` sets the three variables; without
-`ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true`, kept by the reasoning-engine adapter because
-`AdkApp.set_up()` resets it, every trace fails with `INSUFFICIENT_DATA`),
-and the Agent Platform service agent needs `roles/observability.viewAccessor`
-(`monitor.sh` grants it). Monitor errors are in Cloud Logging under
-`logName:"aiplatform.googleapis.com%2Fonline_evaluator"`.
+`fallback_step6.sh` runs the local eval and prints live scores recorded in a rehearsal
+(`evals/recorded/live-scores.json`; refresh it by copying `artifacts/live/summary.json`
+after a good run).
+
+Prerequisites, all handled by the scripts: prompt and answer content in telemetry (`.env`
+sets the three variables; `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=true` is kept by the
+reasoning-engine adapter because `AdkApp.set_up()` resets it), and the Agent Platform
+service agent needs `roles/observability.viewAccessor` (`monitor.sh` grants it). Monitor
+errors are in Cloud Logging under `logName:"aiplatform.googleapis.com%2Fonline_evaluator"`.
 
 ## Resetting between rehearsals
 

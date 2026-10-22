@@ -133,6 +133,7 @@ def test_step5_observe() -> None:
 @timed("step6_evaluate")
 def test_step6_evaluate() -> None:
     eventually("./scripts/eval.sh", attempts=2, wait=10, timeout=1800)
+    eventually("./scripts/score_live.sh", attempts=2, wait=30, timeout=900)
     run("./scripts/monitor.sh")
     eventually("./scripts/check.sh 6", attempts=3, wait=30)
 

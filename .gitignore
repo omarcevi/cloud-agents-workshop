@@ -220,3 +220,6 @@ credentials*.json
 deployment_metadata.json
 artifacts/
 .google-agents-cli/
+
+# eval configs with the project filled in (scripts/lib/common.sh render_eval_config)
+evals/.eval_config.*.yaml

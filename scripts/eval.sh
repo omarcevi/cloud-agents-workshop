@@ -12,25 +12,7 @@ require_project
 SUITES=("${1:-all}")
 [[ "${SUITES[0]}" == "all" ]] && SUITES=(behaviour handbook)
 
-PIDS=()
-# shellcheck disable=SC2329  # called by the EXIT trap
-cleanup() { [[ ${#PIDS[@]} -gt 0 ]] && kill "${PIDS[@]}" 2>/dev/null || true; }
-trap cleanup EXIT
-
-log "Starting local MCP servers"
-port=8081
-for server in "${MCP_SERVERS[@]}"; do
-  (cd "${REPO_ROOT}" && HOST=127.0.0.1 PORT="${port}" uv run --quiet python -m "mcp_servers.${server}.server" \
-     > "${REPO_ROOT}/.setup-local-${server}.log" 2>&1) &
-  PIDS+=($!)
-  export "$(tr '[:lower:]' '[:upper:]' <<< "${server}")_MCP_URL=http://127.0.0.1:${port}"
-  port=$((port + 1))
-done
-for p in 8081 8082 8083; do
-  for _ in $(seq 1 50); do curl -sf "http://127.0.0.1:${p}/health" >/dev/null && break; sleep 0.2; done
-  curl -sf "http://127.0.0.1:${p}/health" >/dev/null || die "Local MCP server on port ${p} did not start"
-done
-ok "hris :8081, ticketing :8082, compensation :8083"
+start_local_mcp_servers
 
 export DEMO_USER_EMAIL GOOGLE_CLOUD_PROJECT="${PROJECT_ID}"
 status=0
