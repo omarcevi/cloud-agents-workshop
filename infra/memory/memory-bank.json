@@ -1,5 +1,5 @@
 {
-  "_comment": "Memory Bank config applied by scripts/memory_bank.py configure. Only these topics are extracted from conversations. The extraction model runs on the global endpoint: the default EU endpoint timed out under load in testing (docs/VERIFIED.md). PROJECT_ID is filled in by the script.",
+  "_comment": "Memory Bank config applied by scripts/memory_bank.py configure (PROJECT_ID is filled in). Only these topics are extracted. The extraction model is pinned to the eu endpoint: with the default model, extraction timed out under load during testing (docs/VERIFIED.md).",
   "customization_configs": [
     {
       "memory_topics": [
@@ -24,6 +24,6 @@
     }
   ],
   "generation_config": {
-    "model": "projects/PROJECT_ID/locations/global/publishers/google/models/gemini-3.8-flash"
+    "model": "projects/PROJECT_ID/locations/eu/publishers/google/models/gemini-3.8-flash"
   }
 }

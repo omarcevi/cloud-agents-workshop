@@ -1,0 +1,12 @@
+# Agent Gateway in egress mode (Agent-to-Anywhere): every outbound call the agent makes
+# goes through it. PROJECT_ID and REGION are filled in by scripts/secure.sh.
+# Schema: $(gcloud info --format='value(installation.sdk_root)')/lib/googlecloudsdk/schemas/networkservices/v1/AgentGateway.yaml
+description: Egress gateway for the Kuzey Labs Workplace Assistant
+protocols:
+- MCP
+googleManaged:
+  governedAccessPath: AGENT_TO_ANYWHERE
+registries:
+- //agentregistry.googleapis.com/projects/PROJECT_ID/locations/REGION
+labels:
+  workshop: deploy-agents

@@ -1,0 +1,10 @@
+# Every Agent Gateway needs an authorization policy. This extension makes IAP the
+# authorizer: IAP evaluates the IAM Unified Access Policies (iapPolicyVersion V2) for
+# each outbound request. Add `iamEnforcementMode: "DRY_RUN"` under metadata to log
+# decisions without blocking. Schema: .../schemas/networkservices/v1/AuthzExtension.yaml
+name: workplace-iap
+service: iap.googleapis.com
+failOpen: false
+timeout: 1s
+metadata:
+  iapPolicyVersion: "V2"

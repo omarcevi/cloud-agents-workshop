@@ -1,0 +1,114 @@
+{
+ "tools": [
+  {
+   "name": "get_my_profile",
+   "description": "Return the calling employee's profile: title, level, team, office, manager and People Partner.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "search_directory",
+   "description": "Search the employee directory by name, team or office. Returns public fields only.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "query": {
+      "description": "Name, team or office to search for.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "query"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "get_leave_balance",
+   "description": "Return the calling employee's annual leave balance for the current year, in working days.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "list_leave_requests",
+   "description": "List the calling employee's leave requests with their status.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "submit_leave_request",
+   "description": "Submit a leave request for the calling employee. Their team lead approves it in the HRIS.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "start_date": {
+      "description": "First day of leave, YYYY-MM-DD.",
+      "type": "string"
+     },
+     "end_date": {
+      "description": "Last day of leave, YYYY-MM-DD. Same as start_date for one day.",
+      "type": "string"
+     },
+     "leave_type": {
+      "default": "ANNUAL",
+      "enum": [
+       "ANNUAL",
+       "ANNUAL_HALF_DAY",
+       "SICK",
+       "UNPAID"
+      ],
+      "type": "string"
+     },
+     "note": {
+      "default": "",
+      "type": "string"
+     }
+    },
+    "required": [
+     "start_date",
+     "end_date"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   }
+  }
+ ]
+}

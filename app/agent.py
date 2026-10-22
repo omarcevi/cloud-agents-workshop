@@ -39,6 +39,11 @@ def gemini() -> Gemini:
     )
 
 
+GENERATION = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_level=config.THINKING_LEVEL)
+)
+
+
 def _today() -> str:
     now = dt.datetime.now(ZoneInfo(config.TIMEZONE))
     return f"{now:%Y-%m-%d} ({now:%A}), time zone {config.TIMEZONE}"
@@ -116,6 +121,7 @@ You are the Kuzey Labs IT desk.
 hr_policy_agent = Agent(
     name="hr_policy_agent",
     model=gemini(),
+    generate_content_config=GENERATION,
     description="Answers questions about Kuzey Labs HR and company policy from the handbook, and published salary bands.",
     instruction=HR_POLICY_INSTRUCTION,
     tools=[
@@ -131,6 +137,7 @@ hr_policy_agent = Agent(
 leave_agent = Agent(
     name="leave_agent",
     model=gemini(),
+    generate_content_config=GENERATION,
     description="Handles the employee's own leave: balance, leave requests and booking time off.",
     instruction=leave_instruction,
     tools=[
@@ -145,6 +152,7 @@ leave_agent = Agent(
 it_desk_agent = Agent(
     name="it_desk_agent",
     model=gemini(),
+    generate_content_config=GENERATION,
     description="Handles IT problems: opens IT tickets and reports ticket status.",
     instruction=IT_DESK_INSTRUCTION,
     tools=[mcp_toolset("ticketing", TICKETING_TOOLS), handbook_search, PreloadMemoryTool()],
@@ -156,6 +164,7 @@ root_agent = Agent(
     # telemetry reports this name as gen_ai.agent.name.
     name="concierge",
     model=gemini(),
+    generate_content_config=GENERATION,
     description="Front door of the Kuzey Labs Workplace Assistant.",
     instruction=CONCIERGE_INSTRUCTION,
     sub_agents=[hr_policy_agent, leave_agent, it_desk_agent],

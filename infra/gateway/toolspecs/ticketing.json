@@ -1,0 +1,107 @@
+{
+ "tools": [
+  {
+   "name": "open_ticket",
+   "description": "Open an IT ticket for the calling employee. Priorities follow the IT handbook (P1 = cannot work).",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "summary": {
+      "description": "One line describing the problem.",
+      "type": "string"
+     },
+     "category": {
+      "enum": [
+       "HARDWARE",
+       "SOFTWARE",
+       "ACCESS",
+       "NETWORK",
+       "OTHER"
+      ],
+      "type": "string"
+     },
+     "priority": {
+      "default": "P3",
+      "enum": [
+       "P1",
+       "P2",
+       "P3",
+       "P4"
+      ],
+      "type": "string"
+     },
+     "details": {
+      "default": "",
+      "type": "string"
+     }
+    },
+    "required": [
+     "summary",
+     "category"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "get_ticket_status",
+   "description": "Return the status of one of the calling employee's tickets.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "ticket_id": {
+      "description": "Ticket id, for example IT-2201.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "ticket_id"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "list_my_tickets",
+   "description": "List the calling employee's tickets, optionally filtered by status.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "status": {
+      "anyOf": [
+       {
+        "enum": [
+         "OPEN",
+         "IN_PROGRESS",
+         "RESOLVED"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null
+     }
+    }
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+# Attaches the IAP extension to the gateway as its request authorizer (REQUEST_AUTHZ).
+# PROJECT_ID, REGION and GATEWAY are filled in by scripts/secure.sh.
+# Schema: .../schemas/networksecurity/v1/AuthzPolicy.yaml
+name: workplace-iap-policy
+target:
+  resources:
+  - projects/PROJECT_ID/locations/REGION/agentGateways/GATEWAY
+policyProfile: REQUEST_AUTHZ
+action: CUSTOM
+customProvider:
+  authzExtension:
+    resources:
+    - projects/PROJECT_ID/locations/REGION/authzExtensions/workplace-iap

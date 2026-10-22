@@ -1,0 +1,65 @@
+{
+ "tools": [
+  {
+   "name": "get_salary_band",
+   "description": "Return the published salary band for a level in an office.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "level": {
+      "enum": [
+       "L3",
+       "L4",
+       "L5",
+       "L6",
+       "L7"
+      ],
+      "type": "string"
+     },
+     "office": {
+      "default": "Istanbul",
+      "enum": [
+       "Istanbul",
+       "Ankara",
+       "Berlin"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "level"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  },
+  {
+   "name": "get_salary",
+   "description": "Return one employee's annual base salary. Confidential.",
+   "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "employee_email": {
+      "description": "Work email of the employee.",
+      "type": "string"
+     }
+    },
+    "required": [
+     "employee_email"
+    ]
+   },
+   "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+   }
+  }
+ ]
+}

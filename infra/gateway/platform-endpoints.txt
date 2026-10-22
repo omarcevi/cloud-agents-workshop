@@ -1,0 +1,32 @@
+# Google APIs the agent itself calls. Agent Gateway blocks everything by default, these
+# included, so they are registered as one composite endpoint in Agent Registry and the
+# agent is allowed to reach them. Matching is by exact hostname: list every standard,
+# regional and mTLS variant. REGION is replaced with the workshop region.
+# Source: "Allowlist essential APIs" in the Agent Gateway + Agent Runtime docs (docs/VERIFIED.md).
+https://aiplatform.googleapis.com
+https://aiplatform.mtls.googleapis.com
+https://REGION-aiplatform.googleapis.com
+https://REGION-aiplatform.mtls.googleapis.com
+https://aiplatform.REGION.rep.googleapis.com
+https://aiplatform.REGION.rep.mtls.googleapis.com
+# Gemini on the EU multi-region endpoint (MODEL_LOCATION=eu in app/config.py)
+https://aiplatform.eu.rep.googleapis.com
+https://aiplatform.eu.rep.mtls.googleapis.com
+https://telemetry.googleapis.com
+https://telemetry.mtls.googleapis.com
+https://logging.googleapis.com
+https://logging.mtls.googleapis.com
+https://cloudtrace.googleapis.com
+https://cloudtrace.mtls.googleapis.com
+https://monitoring.googleapis.com
+https://monitoring.mtls.googleapis.com
+https://cloudresourcemanager.googleapis.com
+https://cloudresourcemanager.mtls.googleapis.com
+https://iamcredentials.googleapis.com
+https://iamcredentials.mtls.googleapis.com
+https://secretmanager.googleapis.com
+https://secretmanager.mtls.googleapis.com
+https://agentregistry.googleapis.com
+# Auth Manager token retrieval and the Calendar API (optional calendar tool)
+https://agentidentitycredentials.googleapis.com
+https://www.googleapis.com

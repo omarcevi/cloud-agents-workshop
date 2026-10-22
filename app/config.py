@@ -17,10 +17,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # fast_api_app.py calls load_dotenv(). Load it here; existing env vars win.
 load_dotenv(REPO_ROOT / ".env")
 
-# Gemini 3.x Flash models are served from the `global` (or `eu`) endpoint, not from
-# europe-west1, so the model location is pinned here instead of following the region.
+# Gemini 3.x Flash is served from the `eu` and `global` endpoints, not from europe-west1,
+# so the model location is set here instead of following the agent's region. `eu` keeps
+# processing in the EU and was the more consistent of the two in testing.
 MODEL = os.environ.get("MODEL", "gemini-3.8-flash")
-MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "global")
+MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "eu")
+# LOW thinking answers these routing and tool-calling turns about 3x faster than the
+# default with the same results in the eval set.
+THINKING_LEVEL = os.environ.get("THINKING_LEVEL", "LOW")
 
 # Demo mode: the employee the agent acts for when the caller's user id is not an email
 # (agents-cli run always sends "cli-user", agents-cli eval sends "eval-cli-user").

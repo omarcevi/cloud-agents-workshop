@@ -1,0 +1,24 @@
+[
+  {
+    "description": "The Workplace Assistant may call the Google APIs it runs on and the HR and IT MCP servers.",
+    "effect": "ALLOW",
+    "principals": ["AGENT_PRINCIPAL"],
+    "operation": {"permissions": ["iap.googleapis.com/resources.egressViaIAP"]},
+    "conditions": {
+      "iap.googleapis.com": {
+        "expression": "destination.agent_registry.endpoint.name == 'GOOGLE_APIS_ENDPOINT' || destination.agent_registry.mcp_server.name in ['HRIS_MCP_SERVER', 'TICKETING_MCP_SERVER']"
+      }
+    }
+  },
+  {
+    "description": "No agent in this project may call the compensation system. Deny rules win over allow rules.",
+    "effect": "DENY",
+    "principals": ["PROJECT_AGENTS"],
+    "operation": {"permissions": ["iap.googleapis.com/resources.egressViaIAP"]},
+    "conditions": {
+      "iap.googleapis.com": {
+        "expression": "destination.agent_registry.mcp_server.name == 'COMPENSATION_MCP_SERVER'"
+      }
+    }
+  }
+]
