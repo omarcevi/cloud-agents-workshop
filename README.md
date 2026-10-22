@@ -8,6 +8,10 @@ calls, follow a request through **Cloud Trace**, and gate changes with **evals**
 
 **Follow-along guide (start here):** https://omarcevi.dev/workshops/deploy-agents-workshop/
 
+**Or follow it step by step inside Cloud Shell** (opens the repo with a guided tutorial panel):
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/omarcevi/cloud-agents-workshop.git&cloudshell_git_branch=main&cloudshell_tutorial=tutorial.md&show=ide%2Cterminal)
+
 Everything here is fictional: Kuzey Labs, its employees, handbook, salaries and tickets.
 
 ```
