@@ -1,0 +1,15 @@
+{
+  "_note": "Fictional employees of the fictional company Kuzey Labs. Any resemblance to real people is coincidental.",
+  "employees": [
+    {"email": "deniz.kaya@kuzeylabs.example", "name": "Deniz Kaya", "title": "Senior Platform Engineer", "level": "L5", "team": "Platform", "office": "Istanbul", "manager": "ayse.demir@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2021-03-01"},
+    {"email": "ayse.demir@kuzeylabs.example", "name": "Ayşe Demir", "title": "Platform Team Lead", "level": "L6", "team": "Platform", "office": "Istanbul", "manager": "emre.koc@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2019-09-16"},
+    {"email": "jonas.weber@kuzeylabs.example", "name": "Jonas Weber", "title": "Platform Engineer", "level": "L4", "team": "Platform", "office": "Berlin", "manager": "ayse.demir@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2024-02-05"},
+    {"email": "mert.ozturk@kuzeylabs.example", "name": "Mert Öztürk", "title": "Data Engineer", "level": "L4", "team": "Data", "office": "Ankara", "manager": "zeynep.celik@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2023-06-12"},
+    {"email": "zeynep.celik@kuzeylabs.example", "name": "Zeynep Çelik", "title": "Data Team Lead", "level": "L6", "team": "Data", "office": "Ankara", "manager": "emre.koc@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2020-01-13"},
+    {"email": "lena.fischer@kuzeylabs.example", "name": "Lena Fischer", "title": "Account Executive", "level": "L4", "team": "Sales", "office": "Berlin", "manager": "selin.aksoy@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2022-10-03"},
+    {"email": "can.arslan@kuzeylabs.example", "name": "Can Arslan", "title": "IT Desk Specialist", "level": "L3", "team": "IT Desk", "office": "Istanbul", "manager": "emre.koc@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2022-04-18"},
+    {"email": "elif.sahin@kuzeylabs.example", "name": "Elif Şahin", "title": "People Partner", "level": "L5", "team": "People", "office": "Istanbul", "manager": "emre.koc@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2020-08-24"},
+    {"email": "selin.aksoy@kuzeylabs.example", "name": "Selin Aksoy", "title": "Head of Sales", "level": "L6", "team": "Sales", "office": "Istanbul", "manager": "emre.koc@kuzeylabs.example", "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2019-02-11"},
+    {"email": "emre.koc@kuzeylabs.example", "name": "Emre Koç", "title": "CTO", "level": "L7", "team": "Leadership", "office": "Istanbul", "manager": null, "people_partner": "elif.sahin@kuzeylabs.example", "start_date": "2018-05-02"}
+  ]
+}

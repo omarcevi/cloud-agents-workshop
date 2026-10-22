@@ -1,0 +1,23 @@
+{
+  "_note": "Fictional pay data for the fictional company Kuzey Labs. It exists only so the workshop can show Agent Gateway blocking access to it.",
+  "currency_by_office": {"Istanbul": "TRY", "Ankara": "TRY", "Berlin": "EUR"},
+  "bands": {
+    "L3": {"TRY": [780000, 1050000],  "EUR": [48000, 58000]},
+    "L4": {"TRY": [1000000, 1400000], "EUR": [58000, 72000]},
+    "L5": {"TRY": [1350000, 1850000], "EUR": [70000, 88000]},
+    "L6": {"TRY": [1800000, 2500000], "EUR": [86000, 110000]},
+    "L7": {"TRY": [2400000, 3600000], "EUR": [105000, 140000]}
+  },
+  "salaries": {
+    "deniz.kaya@kuzeylabs.example": 1620000,
+    "ayse.demir@kuzeylabs.example": 2210000,
+    "jonas.weber@kuzeylabs.example": 64500,
+    "mert.ozturk@kuzeylabs.example": 1180000,
+    "zeynep.celik@kuzeylabs.example": 2050000,
+    "lena.fischer@kuzeylabs.example": 66000,
+    "can.arslan@kuzeylabs.example": 890000,
+    "elif.sahin@kuzeylabs.example": 1490000,
+    "selin.aksoy@kuzeylabs.example": 2380000,
+    "emre.koc@kuzeylabs.example": 3150000
+  }
+}

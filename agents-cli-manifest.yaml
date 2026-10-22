@@ -1,0 +1,21 @@
+name: "workplace-assistant"
+acli_version: "1.11.0"
+agent_directory: "app"
+region: 'europe-west1'
+base_template: "adk"
+generated_at: "2026-10-22T05:10:00.473693+00:00"
+language: "python"
+framework: "google-adk"
+create_params:
+  # The ADK name of the root agent, as rendered into the agent source. Rename
+  # the agent and you must change it in both places: telemetry reports this as
+  # gen_ai.agent.name, and it is what agents-cli reports for the project.
+  root_agent_name: "concierge"
+  deployment_target: "agent_runtime"
+  session_type: "in_memory"
+  cicd_runner: "skip"
+  is_a2a: true
+  agent_gateway: true
+  agent_guidance_filename: "AGENTS.md"
+  agent_runtime:
+    identity_default: "agent_identity"

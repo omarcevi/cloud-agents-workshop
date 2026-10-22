@@ -1,0 +1,9 @@
+{
+  "_note": "Fictional IT tickets for the fictional company Kuzey Labs.",
+  "tickets": [
+    {"id": "IT-2201", "requester": "deniz.kaya@kuzeylabs.example", "summary": "External monitor flickers on USB-C dock", "category": "HARDWARE", "priority": "P3", "status": "IN_PROGRESS", "assignee": "can.arslan@kuzeylabs.example", "created": "2026-10-14"},
+    {"id": "IT-2187", "requester": "deniz.kaya@kuzeylabs.example", "summary": "Access to staging Kubernetes cluster", "category": "ACCESS", "priority": "P2", "status": "RESOLVED", "assignee": "can.arslan@kuzeylabs.example", "created": "2026-10-02"},
+    {"id": "IT-2210", "requester": "mert.ozturk@kuzeylabs.example", "summary": "Laptop battery drains fast", "category": "HARDWARE", "priority": "P3", "status": "OPEN", "assignee": null, "created": "2026-10-19"},
+    {"id": "IT-2195", "requester": "lena.fischer@kuzeylabs.example", "summary": "CRM single sign-on loop", "category": "SOFTWARE", "priority": "P2", "status": "IN_PROGRESS", "assignee": "can.arslan@kuzeylabs.example", "created": "2026-10-08"}
+  ]
+}

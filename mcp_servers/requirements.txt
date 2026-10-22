@@ -1,0 +1,2 @@
+# Runtime dependencies for the three MCP servers (one image, three Cloud Run services).
+fastmcp==4.1.3

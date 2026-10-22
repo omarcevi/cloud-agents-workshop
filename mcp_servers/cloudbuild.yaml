@@ -1,0 +1,8 @@
+# Builds the single MCP server image. Submitted by scripts/setup.sh from the repo root:
+#   gcloud builds submit --config mcp_servers/cloudbuild.yaml --substitutions _IMAGE=...
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "mcp_servers/Dockerfile", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]
+options:
+  logging: CLOUD_LOGGING_ONLY

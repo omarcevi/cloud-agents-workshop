@@ -1,0 +1,21 @@
+{
+  "_note": "Fictional leave data for the fictional company Kuzey Labs.",
+  "year": 2026,
+  "balances": {
+    "deniz.kaya@kuzeylabs.example":   {"entitlement": 22, "carried_over": 3, "used": 9,  "pending": 2},
+    "ayse.demir@kuzeylabs.example":   {"entitlement": 22, "carried_over": 0, "used": 15, "pending": 0},
+    "jonas.weber@kuzeylabs.example":  {"entitlement": 28, "carried_over": 0, "used": 12, "pending": 5},
+    "mert.ozturk@kuzeylabs.example":  {"entitlement": 20, "carried_over": 2, "used": 6,  "pending": 0},
+    "zeynep.celik@kuzeylabs.example": {"entitlement": 22, "carried_over": 5, "used": 18, "pending": 1},
+    "lena.fischer@kuzeylabs.example": {"entitlement": 28, "carried_over": 1, "used": 20, "pending": 0},
+    "can.arslan@kuzeylabs.example":   {"entitlement": 20, "carried_over": 0, "used": 4,  "pending": 0},
+    "elif.sahin@kuzeylabs.example":   {"entitlement": 22, "carried_over": 0, "used": 11, "pending": 0},
+    "selin.aksoy@kuzeylabs.example":  {"entitlement": 22, "carried_over": 2, "used": 16, "pending": 3},
+    "emre.koc@kuzeylabs.example":     {"entitlement": 22, "carried_over": 5, "used": 7,  "pending": 0}
+  },
+  "requests": [
+    {"id": "LV-1041", "employee": "deniz.kaya@kuzeylabs.example", "start_date": "2026-11-12", "end_date": "2026-11-13", "days": 2, "leave_type": "ANNUAL", "status": "PENDING", "approver": "ayse.demir@kuzeylabs.example", "note": "Family visit"},
+    {"id": "LV-1007", "employee": "deniz.kaya@kuzeylabs.example", "start_date": "2026-07-20", "end_date": "2026-07-24", "days": 5, "leave_type": "ANNUAL", "status": "APPROVED", "approver": "ayse.demir@kuzeylabs.example", "note": "Summer holiday"},
+    {"id": "LV-1033", "employee": "jonas.weber@kuzeylabs.example", "start_date": "2026-12-21", "end_date": "2026-12-25", "days": 5, "leave_type": "ANNUAL", "status": "PENDING", "approver": "ayse.demir@kuzeylabs.example", "note": ""}
+  ]
+}
