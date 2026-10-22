@@ -23,14 +23,13 @@ gcloud network-security authz-policies describe workplace-iap-policy --location 
 AGENT_PRINCIPAL="${AGENT_PRINCIPAL:-}"
 [[ -n "${AGENT_PRINCIPAL}" ]] || die "Unknown agent identity. Run ./scripts/grant_agent_access.sh first (step 2)."
 
-# IAP refers to registry resources by project NUMBER, while `gcloud agent-registry ... list`
-# prints the project ID. Policies must use the number form or they never match.
-by_number() { sed "s#^projects/${PROJECT_ID}/#projects/${PROJECT_NUMBER}/#"; }
+# Policy conditions name registry resources with the project ID, exactly as
+# `gcloud agent-registry ... list` prints them. (Gateway logs show the project number
+# instead; a condition written that way never matches.)
 
 registry_mcp_server() {  # registry_mcp_server CLOUD_RUN_URL
   gcloud agent-registry mcp-servers list --location "${REGION}" --project "${PROJECT_ID}" --format=json \
-    | python3 -c 'import json,sys; print(next((m["name"] for m in json.load(sys.stdin) if any(i.get("url","").startswith(sys.argv[1]) for i in m.get("interfaces",[]))), ""))' "$1" \
-    | by_number
+    | python3 -c 'import json,sys; print(next((m["name"] for m in json.load(sys.stdin) if any(i.get("url","").startswith(sys.argv[1]) for i in m.get("interfaces",[]))), ""))' "$1"
 }
 
 log "Looking up registry names"
@@ -38,8 +37,7 @@ HRIS_ID="$(registry_mcp_server "${HRIS_MCP_URL}")"
 TICKETING_ID="$(registry_mcp_server "${TICKETING_MCP_URL}")"
 COMPENSATION_ID="$(registry_mcp_server "${COMPENSATION_MCP_URL}")"
 GOOGLE_APIS_ID="$(gcloud agent-registry endpoints list --location "${REGION}" --project "${PROJECT_ID}" --format=json \
-  | python3 -c 'import json,sys; print(next((e["name"] for e in json.load(sys.stdin) if e.get("attributes",{}).get("agentregistry.googleapis.com/system/RuntimeReference",{}).get("uri","").endswith("/services/google-apis")), ""))' \
-  | by_number)"
+  | python3 -c 'import json,sys; print(next((e["name"] for e in json.load(sys.stdin) if e.get("attributes",{}).get("agentregistry.googleapis.com/system/RuntimeReference",{}).get("uri","").endswith("/services/google-apis")), ""))')"
 for v in HRIS_ID TICKETING_ID COMPENSATION_ID GOOGLE_APIS_ID; do
   [[ -n "${!v}" ]] || die "${v} not found in Agent Registry. Re-run ./scripts/setup.sh"
   ok "${v} = ${!v##*/}"

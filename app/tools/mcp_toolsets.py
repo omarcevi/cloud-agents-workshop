@@ -88,22 +88,14 @@ class UnavailableTool(BaseTool):
 
 
 async def diagnose(url: str, headers: dict[str, str]) -> str:
-    """Send one MCP initialize request and describe the HTTP answer.
+    """Repeat the refused tools/list request and describe the HTTP answer.
 
     The MCP client reports a refused tools/list only as "Server returned an error
     response", without the status. This shows whether it was a 403 from the gateway or
-    from Cloud Run IAM, which the audit log needs.
+    from Cloud Run IAM, which the audit log needs. (Agent Gateway always allows the
+    MCP `initialize` handshake, so that request would not show the denial.)
     """
-    request = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {
-            "protocolVersion": "2025-06-18",
-            "capabilities": {},
-            "clientInfo": {"name": "workplace-assistant", "version": "1"},
-        },
-    }
+    request = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.post(

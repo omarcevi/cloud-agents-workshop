@@ -40,7 +40,13 @@ def gemini() -> Gemini:
 
 
 GENERATION = types.GenerateContentConfig(
-    thinking_config=types.ThinkingConfig(thinking_level=config.THINKING_LEVEL)
+    thinking_config=types.ThinkingConfig(thinking_level=config.THINKING_LEVEL),
+    # Shared model capacity occasionally stalls a call for minutes. Give up after
+    # MODEL_TIMEOUT_SECONDS and retry instead of leaving the employee waiting.
+    http_options=types.HttpOptions(
+        timeout=int(config.MODEL_TIMEOUT_SECONDS * 1000),
+        retry_options=types.HttpRetryOptions(attempts=3),
+    ),
 )
 
 
