@@ -40,7 +40,7 @@ for step in "${!BRANCHES[@]}"; do
   echo "${step}" > .checkpoint
   if (( step < 6 )); then drop_step6_cases; fi
   git add -A
-  git -c commit.gpgsign="${CHECKPOINT_SIGN:-false}" commit -q -m "Checkpoint: state after step ${step} (${branch})" \
+  git -c commit.gpgsign="${CHECKPOINT_SIGN:-false}" commit -q --allow-empty -m "Checkpoint: state after step ${step} (${branch})" \
     -m "Generated from main ${MAIN_SHA} by scripts/dev/make_checkpoints.sh."
   git tag -f "checkpoint/${branch}" >/dev/null
   echo "${branch}: $(git rev-parse --short HEAD)"
