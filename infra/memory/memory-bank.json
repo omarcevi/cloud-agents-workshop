@@ -1,0 +1,29 @@
+{
+  "_comment": "Memory Bank config applied by scripts/memory_bank.py configure. Only these topics are extracted from conversations. The extraction model runs on the global endpoint: the default EU endpoint timed out under load in testing (docs/VERIFIED.md). PROJECT_ID is filled in by the script.",
+  "customization_configs": [
+    {
+      "memory_topics": [
+        {
+          "custom_memory_topic": {
+            "label": "team_and_office",
+            "description": "Which team the employee works in and which Kuzey Labs office they belong to (Istanbul, Ankara or Berlin)."
+          }
+        },
+        {
+          "custom_memory_topic": {
+            "label": "work_preferences",
+            "description": "How the employee likes to work or take leave, for example preferred days off, half days, or calendar habits."
+          }
+        },
+        {
+          "managed_memory_topic": {
+            "managed_topic_enum": "EXPLICIT_INSTRUCTIONS"
+          }
+        }
+      ]
+    }
+  ],
+  "generation_config": {
+    "model": "projects/PROJECT_ID/locations/global/publishers/google/models/gemini-3.8-flash"
+  }
+}

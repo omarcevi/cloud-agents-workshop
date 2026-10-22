@@ -8,7 +8,6 @@ counts these events for the monitoring dashboard (infra/monitoring/).
 
 from __future__ import annotations
 
-import logging
 import re
 from typing import Any
 
@@ -19,7 +18,6 @@ from opentelemetry._logs import LogRecord, SeverityNumber, get_logger
 EVENT_NAME = "workplace.tool_blocked"
 
 _otel = get_logger("workplace.audit")
-_log = logging.getLogger("workplace.audit")
 
 # Agent Gateway's egress denial text, from its troubleshooting docs.
 _GATEWAY = re.compile(r"Egress request is not authorized|\b498\b", re.IGNORECASE)
@@ -47,11 +45,10 @@ def classify(result: Any) -> str | None:
 
 
 def log_blocked(tool: str, agent: str, reason: str, detail: str = "") -> None:
-    """Emit the audit event as an OpenTelemetry log record and as a plain text line.
+    """Emit the audit event as an OpenTelemetry log record (and print it for local runs).
 
-    On Agent Runtime the OTel record lands in Cloud Logging with labels."event.name"
-    and the active trace id. The text line is a fallback the metric filter also
-    matches (stdout on Agent Runtime is not parsed as JSON).
+    On Agent Runtime the OTel record lands in Cloud Logging as jsonPayload with
+    labels."event.name" and the active trace id.
     """
     body = {"event": EVENT_NAME, "tool": tool, "agent": agent, "reason": reason, "detail": detail[:300]}
     _otel.emit(
@@ -62,7 +59,8 @@ def log_blocked(tool: str, agent: str, reason: str, detail: str = "") -> None:
             attributes={"tool": tool, "reason": reason},
         )
     )
-    _log.warning("%s tool=%s agent=%s reason=%s", EVENT_NAME, tool, agent, reason)
+    # Local runs: visible in the terminal. (On Agent Runtime the OTel record above is
+    # what reaches Cloud Logging.)
     print(f"{EVENT_NAME} tool={tool} agent={agent} reason={reason}", flush=True)
 
 

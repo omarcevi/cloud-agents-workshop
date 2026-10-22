@@ -22,9 +22,11 @@ load_dotenv(REPO_ROOT / ".env")
 MODEL = os.environ.get("MODEL", "gemini-3.8-flash")
 MODEL_LOCATION = os.environ.get("MODEL_LOCATION", "global")
 
-# Employee the agent acts for when the caller's user id is not an email
-# (agents-cli run uses "cli-user", agents-cli eval uses "eval-cli-user").
-DEMO_USER_EMAIL = os.environ.get("DEMO_USER_EMAIL", "deniz.kaya@kuzeylabs.example")
+# Demo mode: the employee the agent acts for when the caller's user id is not an email
+# (agents-cli run always sends "cli-user", agents-cli eval sends "eval-cli-user").
+# setup.sh sets it for the workshop. Unset means no fallback: such calls carry no
+# employee and the MCP servers refuse them.
+DEMO_USER_EMAIL = os.environ.get("DEMO_USER_EMAIL", "")
 
 HANDBOOK_DIR = Path(os.environ.get("HANDBOOK_DIR", REPO_ROOT / "data" / "handbook"))
 

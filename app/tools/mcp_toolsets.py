@@ -18,6 +18,7 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+import httpx
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
@@ -53,7 +54,9 @@ def header_provider(server: str) -> Callable[[ReadonlyContext], Awaitable[dict[s
     base_url = config.mcp_base_url(server)
 
     async def provide(ctx: ReadonlyContext) -> dict[str, str]:
-        headers = {"X-User-Email": employee_email(ctx.user_id)}
+        headers = {}
+        if email := employee_email(ctx.user_id):
+            headers["X-User-Email"] = email
         if base_url.startswith("https://"):
             token = await asyncio.to_thread(id_token, base_url)
             headers["Authorization"] = f"Bearer {token}"
@@ -84,6 +87,35 @@ class UnavailableTool(BaseTool):
         }
 
 
+async def diagnose(url: str, headers: dict[str, str]) -> str:
+    """Send one MCP initialize request and describe the HTTP answer.
+
+    The MCP client reports a refused tools/list only as "Server returned an error
+    response", without the status. This shows whether it was a 403 from the gateway or
+    from Cloud Run IAM, which the audit log needs.
+    """
+    request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {"name": "workplace-assistant", "version": "1"},
+        },
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(
+                url,
+                json=request,
+                headers={**headers, "Accept": "application/json, text/event-stream"},
+            )
+        return f"HTTP {response.status_code}: {response.text[:300]}"
+    except httpx.HTTPError as exc:
+        return f"{type(exc).__name__}: {exc}"
+
+
 class GuardedMcpToolset(McpToolset):
     """McpToolset that degrades to placeholder tools instead of failing the turn."""
 
@@ -96,9 +128,11 @@ class GuardedMcpToolset(McpToolset):
         try:
             return await super().get_tools(readonly_context)
         except Exception as exc:  # the server, IAM or the gateway refused tools/list
-            _log.warning("Could not list tools on %s: %s", self.server, exc)
+            headers = await self._build_headers(readonly_context)
+            detail = await diagnose(self._connection_params.url, headers or {})
+            _log.warning("Could not list tools on %s: %s (%s)", self.server, exc, detail)
             return [
-                UnavailableTool(name=name, description=desc, server=self.server, error=str(exc))
+                UnavailableTool(name=name, description=desc, server=self.server, error=detail)
                 for name, desc in self.expected_tools.items()
             ]
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import contextlib
+import logging
 import os
 from collections.abc import AsyncIterator
 
@@ -38,11 +39,28 @@ otel_to_cloud = os.environ.get(
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Serve the ADK dev UI only on a developer machine, never on Agent Runtime.
+serve_dev_ui = not os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ID")
+
+
+def _forward_python_warnings_to_cloud_logging() -> None:
+    """On Agent Runtime only OpenTelemetry log records reach Cloud Logging; plain
+    stdout and Python logging do not. Forward WARNING and above (MCP connection
+    failures, Memory Bank errors, the audit trail) as OTel records."""
+    from opentelemetry._logs import get_logger_provider
+    from opentelemetry.sdk._logs import LoggingHandler
+
+    handler = LoggingHandler(level=logging.WARNING, logger_provider=get_logger_provider())
+    logging.getLogger().addHandler(handler)
+
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from app.agent import app as adk_app
     from app.agent import root_agent
+
+    if otel_to_cloud:
+        _forward_python_warnings_to_cloud_logging()
 
     runner = Runner(
         app=adk_app,
@@ -65,7 +83,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app: FastAPI = get_fast_api_app(
     agents_dir=AGENT_DIR,
-    web=True,
+    web=serve_dev_ui,
     artifact_service_uri=services.ARTIFACT_SERVICE_URI,
     allow_origins=allow_origins,
     session_service_uri=services.SESSION_SERVICE_URI,

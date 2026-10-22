@@ -29,10 +29,16 @@ _FIXED_LOCAL_USER_IDS = {"cli-user", "eval-cli-user", "user", "test_user", "defa
 
 
 def employee_email(user_id: str | None) -> str:
-    """Map an ADK user id to the employee email the HRIS knows."""
+    """Map an ADK user id to the employee email the HRIS knows ("" if unknown).
+
+    The user id is asserted by whoever calls Agent Runtime (Gemini Enterprise, or your
+    own front end). Agent Runtime's endpoint is IAM-protected, so only trusted callers
+    can set it; the MCP servers trust the agent in turn. See the step 4 guide page for
+    what to change when that trust is not enough.
+    """
     if user_id and "@" in user_id:
         return user_id.strip().lower()
-    if user_id and user_id not in _FIXED_LOCAL_USER_IDS:
+    if config.DEMO_USER_EMAIL and user_id not in _FIXED_LOCAL_USER_IDS:
         _log.info("user id %r is not an email; acting for the demo user", user_id)
     return config.DEMO_USER_EMAIL
 
