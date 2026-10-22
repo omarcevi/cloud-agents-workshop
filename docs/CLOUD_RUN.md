@@ -11,8 +11,10 @@ agents-cli scaffold enhance . --deployment-target cloud_run --no-agent-gateway -
   Preview sign-up.
 - The manifest now says `deployment_target: cloud_run`; `agents-cli deploy` runs
   `gcloud run deploy --source .` with the generated settings (`--dry-run` prints it).
-  `deployment/terraform/` was added by the template for teams that provision with
-  Terraform; the lab does not use it.
+- The enhance also generates `deployment/terraform/`. It is removed here: `agents-cli
+  deploy` does not use it, and the template grants project-wide roles (for example
+  `roles/storage.admin` to the app's service account) that you would narrow to
+  bucket-level grants before handing it to a customer.
 - Two dependency fixes after the enhance: `google-cloud-agentplatform` is added back
   (Sessions and Memory Bank still come from Agent Platform), and the template's
   `uvicorn~=0.34` pin is relaxed because FastMCP 4.1.3 needs 0.35 or later.
