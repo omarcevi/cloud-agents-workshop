@@ -180,14 +180,16 @@ it_desk_agent = Agent(
 A2A_TEST_ROLE = os.environ.get("A2A_TEST_ROLE", "")
 
 
-def _department_agents():  # type: ignore[no-untyped-def]
+def _department_agents() -> list:
     """Find the department agents in Agent Registry and call them over A2A."""
     import google.auth
     import google.auth.transport.requests
     import httpx
     from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 
-    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
     session = google.auth.transport.requests.AuthorizedSession(credentials)
     project = os.environ["GOOGLE_CLOUD_PROJECT"]
     location = os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_LOCATION", "europe-west1")
@@ -201,7 +203,7 @@ def _department_agents():  # type: ignore[no-untyped-def]
     class _GoogleAuth(httpx.Auth):
         """Bearer token from the agent's own identity, for the Agent Runtime A2A endpoint."""
 
-        def auth_flow(self, request):  # type: ignore[no-untyped-def]
+        def auth_flow(self, request):
             if not credentials.valid:
                 credentials.refresh(google.auth.transport.requests.Request())
             request.headers["Authorization"] = f"Bearer {credentials.token}"
@@ -209,10 +211,16 @@ def _department_agents():  # type: ignore[no-untyped-def]
 
     agents = []
     for entry in listing.json().get("agents", []):
-        runtime = entry.get("attributes", {}).get(
-            "agentregistry.googleapis.com/system/RuntimeReference", {}
-        ).get("uri", "")
-        if not entry.get("displayName", "").startswith("a2a-") or not runtime or runtime.endswith(f"/{me}"):
+        runtime = (
+            entry.get("attributes", {})
+            .get("agentregistry.googleapis.com/system/RuntimeReference", {})
+            .get("uri", "")
+        )
+        if (
+            not entry.get("displayName", "").startswith("a2a-")
+            or not runtime
+            or runtime.endswith(f"/{me}")
+        ):
             continue
         resource = runtime.removeprefix("//aiplatform.googleapis.com/")
         card_url = (
@@ -230,7 +238,9 @@ def _department_agents():  # type: ignore[no-untyped-def]
                 description=info.get("description", ""),
                 httpx_client=httpx.AsyncClient(auth=_GoogleAuth(), timeout=180),
                 # The employee this turn is for; the department agent acts for them.
-                a2a_request_meta_provider=lambda ctx, msg: {"kuzey_user_id": ctx.user_id},
+                a2a_request_meta_provider=lambda ctx, msg: {
+                    "kuzey_user_id": ctx.user_id
+                },
             )
         )
     return agents
@@ -250,7 +260,11 @@ else:
         sub_agents=[
             hr_policy_agent,
             leave_agent,
-            *(_department_agents() if A2A_TEST_ROLE == "concierge" else [it_desk_agent]),
+            *(
+                _department_agents()
+                if A2A_TEST_ROLE == "concierge"
+                else [it_desk_agent]
+            ),
         ],
         tools=[PreloadMemoryTool()],
         after_tool_callback=audit_tool_result,
