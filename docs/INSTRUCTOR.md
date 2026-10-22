@@ -41,6 +41,10 @@ covers what happens around it. Timings and rough edges from the rehearsals are i
 - Tell participants what to bring: a Google Cloud project with billing where they are
   Owner, and a browser signed in to that account (Cloud Shell). Free-trial credits work.
   Ask them to open Cloud Shell once beforehand; the first start takes a minute.
+- Tell participants to start from the guide's **Open in Cloud Shell** button: it clones the
+  repo and opens `tutorial.md` as a side panel with every command. In the dialog they must
+  tick **Trust repo** before **Confirm**; otherwise Cloud Shell runs in ephemeral mode and
+  deletes their files when the session ends.
 - Quotas to check in a fresh project (Console → IAM & Admin → Quotas):
   - Cloud Build concurrent builds (setup builds one image; each deploy builds one).
   - Agent Runtime: reasoning engines per region (the lab creates one).
