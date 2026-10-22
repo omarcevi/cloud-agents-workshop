@@ -1,10 +1,10 @@
 <walkthrough-metadata>
-  <meta name="title" content="Deploying Your Agents on Google Cloud" />
+  <meta name="title" content="Deploying your agents on Google Cloud Agent Platform" />
   <meta name="description" content="Deploy a multi-agent ADK app to Agent Runtime with Agent Identity, Memory Bank, Agent Gateway, traces and evals." />
   <meta name="keywords" content="ADK, Agent Runtime, Agent Identity, Agent Gateway, Memory Bank, evaluation" />
 </walkthrough-metadata>
 
-# Deploying Your Agents on Google Cloud
+# Deploying your agents on Google Cloud Agent Platform
 
 ## Welcome
 
@@ -13,7 +13,7 @@ production configuration. The assistant has a concierge and three specialist age
 concierge sends HR questions, leave requests and IT problems to the specialist agents. The
 specialist agents call MCP servers on Cloud Run.
 
-![Architecture](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/architecture.svg)
+![Architecture](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/architecture.svg)
 
 | Step | What you do |
 |---|---|
@@ -27,7 +27,7 @@ specialist agents call MCP servers on Cloud Run.
 Each step tells you what happens, gives the commands, and links to the console pages that
 show the result. To paste a command into the terminal, click the copy button. The guide has
 the full explanations, the diagrams and the solutions to problems:
-[omarcevi.dev/workshops/deploy-agents-workshop](https://omarcevi.dev/workshops/deploy-agents-workshop/).
+[omarcevi.dev/workshops/cloud-agents-workshop](https://omarcevi.dev/workshops/cloud-agents-workshop/).
 
 Use the same terminal tab for the full lab. Later steps use variables that you set in earlier
 steps.
@@ -67,9 +67,9 @@ tutorial open the project that you selected here.
 - **Agent Gateway:** `setup.sh` starts to build Agent Gateway in the background. This takes
   approximately 6 minutes. You use the gateway in step 4.
 
-![What setup.sh creates](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-1-setup.svg)
+![What setup.sh creates](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-1-setup.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-1-setup.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-1-setup.svg)
 
 ### Run it
 
@@ -105,7 +105,7 @@ tutorial open the project that you selected here.
 
 &nbsp;
 
-If this check fails, see [Step 1 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-1/).
+If this check fails, see [Step 1 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-1/).
 
 ## Step 2 · Deploy
 
@@ -124,9 +124,9 @@ and the `Dockerfile`), builds a container and creates an **Agent Runtime** insta
   MCP server. The agent calls the HRIS as itself. Cloud Run checks the permission on each
   request.
 
-![What agents-cli deploy does](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-2-deploy.svg)
+![What agents-cli deploy does](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-2-deploy.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-2-deploy.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-2-deploy.svg)
 
 ### Run it
 
@@ -165,7 +165,7 @@ and the `Dockerfile`), builds a container and creates an **Agent Runtime** insta
 &nbsp;
 
 To start from the state after step 1, run `git checkout step-1-setup`. If this check fails,
-see [Step 2 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-2/).
+see [Step 2 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-2/).
 
 ## Step 3 · Remember
 
@@ -183,9 +183,9 @@ conversations:
 
 If you tell the agent a fact on Monday, the agent still knows it on Friday.
 
-![Sessions and Memory Bank across a week](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-3-remember.svg)
+![Sessions and Memory Bank across a week](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-3-remember.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-3-remember.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-3-remember.svg)
 
 ### Run it
 
@@ -220,7 +220,7 @@ If you tell the agent a fact on Monday, the agent still knows it on Friday.
 
 &nbsp;
 
-If this check fails, see [Step 3 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-3/).
+If this check fails, see [Step 3 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-3/).
 
 ## Step 4 · Secure
 
@@ -242,9 +242,9 @@ allows the HRIS and the ticketing server, and denies the compensation system. Th
 agent still calls the compensation tool, but the policy stops the call. In a company, the
 security team owns this policy. The agent teams register their tools.
 
-![Agent Identity and the checks Agent Gateway runs](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-4-secure.svg)
+![Agent Identity and the checks Agent Gateway runs](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-4-secure.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-4-secure.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-4-secure.svg)
 
 ### Run it
 
@@ -295,7 +295,7 @@ security team owns this policy. The agent teams register their tools.
 
 If your project has no Agent Gateway, use `./scripts/fallback_step4.sh`. This script blocks
 the server with Cloud Run IAM. If this check fails, see
-[Step 4 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-4/).
+[Step 4 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-4/).
 
 ## Step 5 · Observe
 
@@ -312,9 +312,9 @@ Agent Runtime exports **OpenTelemetry** data. You do not have to add code:
 
 `observe.sh` shows these data on one dashboard.
 
-![One leave request as a trace, and where telemetry lands](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-5-observe.svg)
+![One leave request as a trace, and where telemetry lands](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-5-observe.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-5-observe.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-5-observe.svg)
 
 ### Run it
 
@@ -348,7 +348,7 @@ Agent Runtime exports **OpenTelemetry** data. You do not have to add code:
 
 &nbsp;
 
-If this check fails, see [Step 5 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-5/).
+If this check fails, see [Step 5 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-5/).
 
 ## Step 6 · Evaluate
 
@@ -371,9 +371,9 @@ You can find the quality of the agent in three ways:
 
 Each failure in production becomes a new eval case.
 
-![The evaluation loop](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-6-evaluate.svg)
+![The evaluation loop](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-6-evaluate.svg)
 
-[Open the diagram full size](https://omarcevi.dev/workshops/deploy-agents-workshop/diagrams/step-6-evaluate.svg)
+[Open the diagram full size](https://omarcevi.dev/workshops/cloud-agents-workshop/diagrams/step-6-evaluate.svg)
 
 ### Run it
 
@@ -418,7 +418,7 @@ Each failure in production becomes a new eval case.
 
 &nbsp;
 
-If this check fails, see [Step 6 in the guide](https://omarcevi.dev/workshops/deploy-agents-workshop/step-6/).
+If this check fails, see [Step 6 in the guide](https://omarcevi.dev/workshops/cloud-agents-workshop/step-6/).
 
 ## Teardown
 
@@ -443,5 +443,5 @@ You deployed a multi-agent app to Agent Runtime with its own identity. You gave 
 put a policy in front of each tool call. You also examined its traces and used evals as a
 gate before each deployment.
 
-Next, read the [production readiness checklist](https://omarcevi.dev/workshops/deploy-agents-workshop/production/)
-and [Agent Runtime, Cloud Run or GKE](https://omarcevi.dev/workshops/deploy-agents-workshop/runtimes/).
+Next, read the [production readiness checklist](https://omarcevi.dev/workshops/cloud-agents-workshop/production/)
+and [Agent Runtime, Cloud Run or GKE](https://omarcevi.dev/workshops/cloud-agents-workshop/runtimes/).

@@ -1,7 +1,7 @@
 [project]
 name = "workplace-assistant"
 version = "0.1.0"
-description = "Workplace Assistant for the 'Deploying Your Agents on Google Cloud' workshop"
+description = "Workplace Assistant for the 'Deploying your agents on Google Cloud Agent Platform' workshop"
 authors = [
     {name = "Omar Elcircevi"},
 ]

@@ -1,4 +1,4 @@
-# Deploying Your Agents on Google Cloud: workshop lab
+# Deploying your agents on Google Cloud Agent Platform: workshop lab
 
 This repository is the hands-on lab for **Google Cloud Day Türkiye, Builder Connect**
 (27 October 2026). You deploy a multi-agent **Workplace Assistant** to **Agent Runtime** with
@@ -6,7 +6,7 @@ its own **Agent Identity**. You give it **Memory Bank** and put **Agent Gateway*
 its tool calls. Then you follow a request in **Cloud Trace**. You use **evals** as a gate for
 changes, and an **Online Monitor** gives scores to live traffic.
 
-**Step-by-step guide (start here):** https://omarcevi.dev/workshops/deploy-agents-workshop/
+**Step-by-step guide (start here):** https://omarcevi.dev/workshops/cloud-agents-workshop/
 
 **You can also do the lab in Cloud Shell, with a tutorial panel that shows each step.** In the dialog, select **Trust repo**, then click **Confirm**. If you do not select **Trust repo**, Cloud Shell runs in ephemeral mode and deletes your files at the end of the session. Click the button only one time, because each click makes one more copy (`cloud-agents-workshop-0`, ...):
 

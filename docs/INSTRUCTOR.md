@@ -1,7 +1,7 @@
 # Instructor notes
 
-For whoever runs the "Deploying Your Agents on Google Cloud" lab. Participant-facing
-instructions live in the guide (omarcevi.dev/workshops/deploy-agents-workshop); this file
+For whoever runs the "Deploying your agents on Google Cloud Agent Platform" lab. Participant-facing
+instructions live in the guide (omarcevi.dev/workshops/cloud-agents-workshop); this file
 covers what happens around it. Timings and rough edges from the rehearsals are in
 [DRY_RUN.md](DRY_RUN.md); every command and flag is traced to a doc in
 [VERIFIED.md](VERIFIED.md).

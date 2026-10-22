@@ -46,7 +46,7 @@ phase_repo() {
   else
     gcloud artifacts repositories create "${AR_REPO}" --repository-format docker \
       --location "${REGION}" --project "${PROJECT_ID}" --labels "${LABELS}" \
-      --description "Deploying Your Agents workshop" --quiet
+      --description "Cloud agents workshop" --quiet
     ok "created"
   fi
 }
